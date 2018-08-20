@@ -1,4 +1,3 @@
-// Include standard headers
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
@@ -41,7 +40,7 @@ int main( void )
 
 	glm::mat4 projection_matrix = glm::perspective(glm::radians(45.0f), 16.0f/9.0f, 0.1f, 100.0f); // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 
-	glm::mat4 view_matrix = glm::lookAt(glm::vec3(0,0,15), glm::vec3(0,0,0), glm::vec3(0,1,0));
+	glm::mat4 view_matrix = glm::lookAt(glm::vec3(0,1,15), glm::vec3(0,0,0), glm::vec3(0,1,0));
 	glm::mat4 model_matrix = glm::translate(glm::mat4(), glm::vec3(1.0f, 0.0f, 0.0f));
 	glm::mat4 MVP = projection_matrix * view_matrix * model_matrix;
 
@@ -88,15 +87,25 @@ int main( void )
 		// falcon movement
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		{
-			if(deltaX < 3.7f)
+			if(deltaY < 3.7f)
 				deltaY += 7.5f * deltaTime;
+			if(rotX < 0.3f)
+				rotX += rotSpeed * deltaTime;
 		}
+		else
+			if(rotX > 0.0f)
+				rotX -= rotSpeed * deltaTime;
 
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 		{
 			if(deltaY > -5.5f)
 				deltaY -= 7.5f * deltaTime;
+			if(rotX > -0.3f)
+				rotX -= rotSpeed * deltaTime;
 		}
+		else
+			if(rotX < 0.0f)
+				rotX += rotSpeed * deltaTime;
 
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		{
@@ -134,8 +143,8 @@ int main( void )
 
 		// land
 		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(0.0f, -8.0f, 0.0f)); // translate it down so it's at the center of the scene
-		model = glm::scale(model, glm::vec3(30.0f, 30.0f, 30.0f));
+		model = glm::translate(model, glm::vec3(0.0f, -8.0f, -1000+glfwGetTime()*100)); // translate it down so it's at the center of the scene
+		model = glm::scale(model, glm::vec3(1000.0f, 30.0f, 1000.0f));
 		MVP = projection_matrix * view_matrix * model;
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, glm::value_ptr(MVP));
 		land.Draw(simpleShader);
