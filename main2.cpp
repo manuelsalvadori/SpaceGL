@@ -48,11 +48,24 @@ int main( void )
 	Model nanosuit("src/nanosuit/nanosuit.obj");
 	Model falcon("src/falcon/Millennium_Falcon.obj");
 	Model land("src/falcon/cube.obj");
-	float delta = -1.0f;
-	float rot = 0.0f;
+
+	float deltaY = -4.0f;
+	float deltaX = 0.0f;
+	float rotY = 3.14159f;
+	float rotX = 0.0f;
+	float rotZ = 0.0f;
+	float rotSpeed = 1.0f;
+
+	float deltaTime = 0.0f, lastFrame = 0.0f;
+
+	// game loop -----------------------------------------------------------------------------------------------------------
 
 	while(glfwWindowShouldClose(window) == 0)
 	{
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
 		glClear(GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(simpleShaderID); // Use our shader
@@ -72,23 +85,54 @@ int main( void )
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, glm::value_ptr(MVP));
 		nanosuit.Draw(simpleShader);
 
+		// falcon movement
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-			delta += 0.1f;
+		{
+			if(deltaX < 3.7f)
+				deltaY += 7.5f * deltaTime;
+		}
+
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-			delta -= 0.1f;
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-			rot += 0.1f;
+		{
+			if(deltaY > -5.5f)
+				deltaY -= 7.5f * deltaTime;
+		}
+
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-			rot -= 0.1f;
-		std::cout << delta << endl;
+		{
+			if(deltaX < 7.5f)
+				deltaX += 7.5f * deltaTime;
+			if(rotZ < 0.3f)
+				rotZ += rotSpeed * deltaTime;
+		}
+		else
+			if(rotZ > 0.0f)
+				rotZ -= rotSpeed * deltaTime;
+
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		{
+			if(deltaX > -7.5f)
+				deltaX -= 7.5f * deltaTime;
+			if(rotZ > -0.3f)
+				rotZ -= rotSpeed * deltaTime;
+		}
+		else
+			if(rotZ < 0.0f)
+				rotZ += rotSpeed * deltaTime;
+		std::cout << rotZ << endl;
+
+		// falcon
 		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(-1.0f, delta, -2.0f)); // translate it down so it's at the center of the scene
-		model = glm::rotate(model, rot, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(deltaX, deltaY, 0.0f)); // translate it down so it's at the center of the scene
+		model = glm::rotate(model, rotX, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, rotY, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, rotZ, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));
 		MVP = projection_matrix * view_matrix * model;
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, glm::value_ptr(MVP));
 		falcon.Draw(simpleShader);
 
+		// land
 		model = glm::mat4();
 		model = glm::translate(model, glm::vec3(0.0f, -8.0f, 0.0f)); // translate it down so it's at the center of the scene
 		model = glm::scale(model, glm::vec3(30.0f, 30.0f, 30.0f));
