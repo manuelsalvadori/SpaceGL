@@ -35,10 +35,11 @@ int main( void )
 	glEnable(GL_DEPTH_TEST); // z-buffer
 	glDepthFunc(GL_LESS); // z-buffer
 
-	Shader simpleShader = Shader( "src/matBlinnPhong.vs", "src/matBlinnPhong.fs");
+	Shader simpleShader = Shader("src/shaders/matBlinnPhong.vs", "src/shaders/matBlinnPhong.fs");
+	Shader shadowShader = Shader("src/shaders/shadowMap.vs","src/shaders/shadowMap.fs");
 	GLuint simpleShaderID = simpleShader.getID();
 
-	glm::vec3 ligthPos = glm::vec3(3,2,2);
+	glm::vec3 ligthPos = glm::vec3(46,77,86);
 	glm::vec3 camPos = glm::vec3(0,1,15);
 
 	glm::mat4 projection_matrix = glm::perspective(glm::radians(45.0f), 16.0f/9.0f, 0.1f, 100.0f); // Projection matrix : Field of View, screen ratio, display range : near <-> far planes
@@ -46,8 +47,11 @@ int main( void )
 	glm::mat3 normalMat;
 
 	Model asteroid("src/asteroid/icosphere.obj");
+	glm::mat4 ast_transform;
 	Model falcon("src/falcon/Millennium_Falcon.obj");
+	glm::mat4 falcon_transform;
 	Model land("src/falcon/cube.obj");
+	glm::mat4 land_transform;
 
 	float deltaY = -4.0f;
 	float deltaX = 0.0f;
@@ -59,6 +63,37 @@ int main( void )
 	float deltaTime = 0.0f, lastFrame = 0.0f;
 	float shininess = 300.0f;
 
+	// configure depth map FBO
+	// -----------------------
+	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	unsigned int depthMapFBO;
+	glGenFramebuffers(1, &depthMapFBO);
+	// create depth texture
+	unsigned int depthMap;
+	glGenTextures(1, &depthMap);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+	// attach depth texture as FBO's depth buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+	// shader configuration
+	// --------------------
+	simpleShader.use();
+	simpleShader.setInt("shadowMap", 1);
+	//debugDepthQuad.use();
+	//debugDepthQuad.setInt("depthMap", 0);
+
 	// game loop -----------------------------------------------------------------------------------------------------------
 
 	while(glfwWindowShouldClose(window) == 0)
@@ -67,19 +102,46 @@ int main( void )
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
+		// transformation matrices
+		ast_transform = glm::mat4();
+		ast_transform = glm::rotate(ast_transform, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
+		//transform = glm::rotate(ast_transform, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
+		//transform = glm::rotate(ast_transform, (float)glfwGetTime()*12, glm::vec3(0.0f, 0.0f, 1.0f));
+
+		// falcon movement
+		Utilities::movementHandler(window, deltaTime, rotSpeed, deltaX, deltaY, rotX, rotZ);
+
+		// falcon
+		falcon_transform = glm::mat4();
+		falcon_transform = glm::translate(falcon_transform, glm::vec3(deltaX, deltaY, 0.0f));
+		falcon_transform = glm::rotate(falcon_transform, rotX, glm::vec3(1.0f, 0.0f, 0.0f));
+		falcon_transform = glm::rotate(falcon_transform, rotY, glm::vec3(0.0f, 1.0f, 0.0f));
+		falcon_transform = glm::rotate(falcon_transform, rotZ, glm::vec3(0.0f, 0.0f, 1.0f));
+		falcon_transform = glm::scale(falcon_transform, glm::vec3(0.01f, 0.01f, 0.01f));
+
+		// land
+		land_transform = glm::mat4();
+		land_transform = glm::translate(land_transform, glm::vec3(0.0f, -8.0f, -1000+glfwGetTime()*100));
+		land_transform = glm::scale(land_transform, glm::vec3(1000.0f, 30.0f, 1000.0f));
+
+		// depth texture
+
+
+
+
+		// regular rendering -------------------------------------------------------------------------------------------
+
 		glClear(GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);
 		glfwGetWindowSize(window, &width, &height);
 
+		// shader setting
 		projection_matrix = glm::perspective(glm::radians(45.0f), (float)width/(float)height, 0.1f, 100.0f);
-
-		glm::mat4 transform;
-		transform = glm::translate(transform, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-		transform = glm::scale(transform, glm::vec3(2.0f, 2.0f, 2.0f));
-		normalMat = glm::inverseTranspose(glm::mat3(transform));
 
 		simpleShader.use();
 		simpleShader.setVec3("light.position", ligthPos);
 		simpleShader.setVec3("viewPos", camPos);
+		simpleShader.setMat4("view", view_matrix);
+		simpleShader.setMat4("projection", projection_matrix);
 
 		// light properties
 		glm::vec3 lightColor;
@@ -95,56 +157,10 @@ int main( void )
 		// material properties
 		simpleShader.setVec3("material.ambient", 0.5f, 0.5f, 0.5f);
 		simpleShader.setVec3("material.diffuse", 1.0f, 1.0f, 1.0f);
-		simpleShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f); // specular lighting doesn't have full effect on this object's material
-
-		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-			shininess ++;
-		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-			shininess --;
-		std::cout << "s: " << shininess << std::endl;
+		simpleShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
 		simpleShader.setFloat("material.shininess", shininess);
 
-		// matrices
-		//transform = glm::rotate(transform, (float)glfwGetTime()*9, glm::vec3(1.0f, 0.0f, 0.0f));
-		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
-		//transform = glm::rotate(transform, (float)glfwGetTime()*12, glm::vec3(0.0f, 0.0f, 1.0f));
-		normalMat = glm::inverseTranspose(glm::mat3(transform));
-
-		simpleShader.setMat4("model", transform);
-		simpleShader.setMat4("view", view_matrix);
-		simpleShader.setMat4("projection", projection_matrix);
-		simpleShader.setMat3("normalMat", normalMat);
-		asteroid.Draw(simpleShader);
-
-		// falcon movement
-		Utilities::movementHandler(window, deltaTime, rotSpeed, deltaX, deltaY, rotX, rotZ);
-
-		// falcon
-		transform = glm::mat4();
-		transform = glm::translate(transform, glm::vec3(deltaX, deltaY, 0.0f));
-		transform = glm::rotate(transform, rotX, glm::vec3(1.0f, 0.0f, 0.0f));
-		transform = glm::rotate(transform, rotY, glm::vec3(0.0f, 1.0f, 0.0f));
-		transform = glm::rotate(transform, rotZ, glm::vec3(0.0f, 0.0f, 1.0f));
-		transform = glm::scale(transform, glm::vec3(0.01f, 0.01f, 0.01f));
-		normalMat = glm::inverseTranspose(glm::mat3(transform));
-		simpleShader.use();
-		simpleShader.setMat4("model", transform);
-		simpleShader.setMat4("view", view_matrix);
-		simpleShader.setMat4("projection", projection_matrix);
-		simpleShader.setMat3("normalMat", normalMat);
-		falcon.Draw(simpleShader);
-
-		// land
-		transform = glm::mat4();
-		transform = glm::translate(transform, glm::vec3(0.0f, -8.0f, -1000+glfwGetTime()*100));
-		transform = glm::scale(transform, glm::vec3(1000.0f, 30.0f, 1000.0f));
-		normalMat = glm::inverseTranspose(glm::mat3(transform));
-		simpleShader.use();
-		simpleShader.setMat4("model", transform);
-		simpleShader.setMat4("view", view_matrix);
-		simpleShader.setMat4("projection", projection_matrix);
-		simpleShader.setMat3("normalMat", normalMat);
-		land.Draw(simpleShader);
+		Utilities::renderScene(simpleShader, falcon, falcon_transform, land, land_transform, asteroid, ast_transform);
 
 		// Swap buffers
 		glfwSwapBuffers(window);

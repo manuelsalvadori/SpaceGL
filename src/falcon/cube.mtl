@@ -10,5 +10,4 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Kd Millennium_Falcon_Bottom_D.tga
-map_Bump Millennium_Falcon_Bottom_N.tga
+map_Kd ico_D.tga
