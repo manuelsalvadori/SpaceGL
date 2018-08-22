@@ -35,7 +35,7 @@ int main( void )
 	glEnable(GL_DEPTH_TEST); // z-buffer
 	glDepthFunc(GL_LESS); // z-buffer
 
-	Shader simpleShader = Shader( "src/SimpleVertexShader.vertexshader", "src/SimpleFragmentShader.fragmentshader");
+	Shader simpleShader = Shader( "src/matBlinnPhong.vs", "src/matBlinnPhong.fs");
 	GLuint simpleShaderID = simpleShader.getID();
 
 	glm::vec3 ligthPos = glm::vec3(3,2,2);
@@ -105,6 +105,11 @@ int main( void )
 		simpleShader.setFloat("material.shininess", shininess);
 
 		// matrices
+		//transform = glm::rotate(transform, (float)glfwGetTime()*9, glm::vec3(1.0f, 0.0f, 0.0f));
+		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
+		//transform = glm::rotate(transform, (float)glfwGetTime()*12, glm::vec3(0.0f, 0.0f, 1.0f));
+		normalMat = glm::inverseTranspose(glm::mat3(transform));
+
 		simpleShader.setMat4("model", transform);
 		simpleShader.setMat4("view", view_matrix);
 		simpleShader.setMat4("projection", projection_matrix);

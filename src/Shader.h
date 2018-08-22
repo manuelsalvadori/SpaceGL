@@ -11,9 +11,7 @@
 class Shader
 {
 public:
-
-	Shader(const GLchar* vertexPath, const GLchar* fragmentPath);
-
+	Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
 	GLuint getID();
 
 	// use/activate the shader
