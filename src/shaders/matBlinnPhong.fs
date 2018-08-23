@@ -27,6 +27,7 @@ uniform vec3 viewPos;
 uniform Material material;
 uniform Light light;
 uniform sampler2D texture_diffuse1;
+uniform sampler2D texture_normal1;
 uniform sampler2D shadowMap;
 uniform bool falcon;
 
@@ -49,8 +50,6 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 	vec3 normal = normalize(Normal);
 	vec3 lightDir = normalize(light.position - FragPos);
 	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-	// check whether current frag pos is in shadow
-	// float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
 	// PCF
 	float shadow = 0.0;
 	vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
@@ -74,6 +73,9 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 void main()
 {
 	vec3 color = texture(texture_diffuse1, TexCoords).rgb;
+//	if(falcon)
+//		color = texture(texture_normal1, TexCoords).rgb;
+
 
 	// ambient
 	vec3 ambient = 0.5 * color * light.ambient * material.ambient;
@@ -95,7 +97,7 @@ void main()
 	// calculate shadow
 	float shadow = ShadowCalculation(FragPosLightSpace);                    
 	vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
-	if(falcon) lighting = ambient + diffuse + specular;
+	//if(falcon) lighting = ambient + diffuse + specular;
 	FragColor = vec4(lighting, 1.0);
 	
 

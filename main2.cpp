@@ -33,6 +33,7 @@ int main( void )
 
 	glClearColor(0.1f, 0.0f, 0.1f, 0.0f);
 
+	glEnable(GL_MULTISAMPLE); // anti-aliasing
 	glEnable(GL_CULL_FACE); // backface culling
 	glEnable(GL_DEPTH_TEST); // z-buffer
 	glDepthFunc(GL_LESS); // z-buffer
@@ -93,7 +94,7 @@ int main( void )
 	// shader configuration
 	// --------------------
 	simpleShader.use();
-	simpleShader.setInt("shadowMap", 1);
+/**/	simpleShader.setInt("shadowMap", 0);
 	debugDepthQuad.use();
 	debugDepthQuad.setInt("depthMap", 0);
 
@@ -200,11 +201,12 @@ int main( void )
 		//		simpleShader.setVec3("material.ambient", 0.5f, 0.5f, 0.5f);
 		//		simpleShader.setVec3("material.diffuse", 1.0f, 1.0f, 1.0f);
 		//		simpleShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
-		simpleShader.setVec3("material.ambient", 0.1f, 0.1f, 0.1f);
-		simpleShader.setVec3("material.diffuse", 0.64f, 0.64f, 0.64f);
+		simpleShader.setVec3("material.ambient", 0.5f, 0.5f, 0.5f);
+		simpleShader.setVec3("material.diffuse", 0.84f, 0.84f, 0.84f);
 		simpleShader.setVec3("material.specular", 0.2f, 0.2f, 0.2f);
 		simpleShader.setFloat("material.shininess", shininess);
-		glActiveTexture(GL_TEXTURE1);
+
+/**/		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		Utilities::renderScene(simpleShader, falcon, falcon_transform, land, land_transform, asteroid, ast_transform);
 
