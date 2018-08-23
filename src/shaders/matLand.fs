@@ -101,11 +101,13 @@ void main()
 	float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess) * when_gt(diff, 0.0f);
 
 	vec3 specular = light.specular * (spec * material.specular);  //vec3(0.3) * spec; // assuming bright white light color
-	//FragColor = vec4(ambient + diffuse + specular, 1.0); // no shadows 
+	//FragColor = vec4(ambient + diffuse + specular, 1.0); // no shadows
 
 	// calculate shadow
 	float shadow = ShadowCalculation(FragPosLightSpace) * 0.8f;                    
 	vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular));  
 
 	FragColor = vec4(lighting, 1.0);
+
+
 }

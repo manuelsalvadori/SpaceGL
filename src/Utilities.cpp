@@ -95,7 +95,7 @@ void Utilities::movementHandler(GLFWwindow *window, float &deltaTime, float &rot
 			rotZ += rotSpeed * deltaTime;
 }
 
-void Utilities::renderScene(Shader shader, Model &falcon, glm::mat4 &falcon_transform, Model &land, glm::mat4 &land_transform, Model &asteroid, glm::mat4 &ast_transform)
+void Utilities::renderScene(Shader shader, Model &falcon, glm::mat4 &falcon_transform, Model &asteroid, glm::mat4 &ast_transform)
 {
 
 	glm::mat4 normalMat = glm::inverseTranspose(glm::mat3(ast_transform));
@@ -109,16 +109,43 @@ void Utilities::renderScene(Shader shader, Model &falcon, glm::mat4 &falcon_tran
 	shader.setMat3("normalMat", normalMat);
 	asteroid.Draw(shader);
 
-	normalMat = glm::inverseTranspose(glm::mat3(land_transform));
-	shader.setMat4("model", land_transform);
-	shader.setMat3("normalMat", normalMat);
-	land.Draw(shader);
-
 	normalMat = glm::inverseTranspose(glm::mat3(falcon_transform));
 	shader.setMat4("model", falcon_transform);
 	shader.setMat3("normalMat", normalMat);
-	shader.setBool("falcon", true);
 	falcon.Draw(shader);
-	shader.setBool("falcon", false);
+}
+
+void Utilities::renderFalcon(Shader shader, Model &falcon, glm::mat4 &falcon_transform)
+{
+
+	glm::mat4 normalMat = glm::inverseTranspose(glm::mat3(falcon_transform));
+	shader.setMat4("model", falcon_transform);
+	shader.setMat3("normalMat", normalMat);
+	falcon.Draw(shader);
+}
+
+void Utilities::renderAsteroids(Shader shader, Model &asteroid, glm::mat4 &ast_transform)
+{
+
+	glm::mat4 normalMat = glm::inverseTranspose(glm::mat3(ast_transform));
+	shader.setMat4("model", ast_transform);
+	shader.setMat3("normalMat", normalMat);
+	asteroid.Draw(shader);
+
+	ast_transform = glm::translate(ast_transform, glm::vec3(-2.f,0.f,0.f));
+	normalMat = glm::inverseTranspose(glm::mat3(ast_transform));
+	shader.setMat4("model", ast_transform);
+	shader.setMat3("normalMat", normalMat);
+	asteroid.Draw(shader);
+
+}
+
+void Utilities::renderLand(Shader shader, Model &land, glm::mat4 &land_transform)
+{
+
+	glm::mat4 normalMat = glm::inverseTranspose(glm::mat3(land_transform));
+	shader.setMat4("model", land_transform);
+	shader.setMat3("normalMat", normalMat);
+	land.Draw(shader);
 }
 

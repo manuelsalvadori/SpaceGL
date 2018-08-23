@@ -21,6 +21,8 @@ uniform mat4 projection;
 uniform mat3 normalMat;
 uniform mat4 lightSpaceMatrix;
 
+uniform float time;
+
 uniform vec3 lightPos;
 uniform vec3 viewPos;
 
@@ -28,7 +30,9 @@ uniform vec3 viewPos;
 void main()
 {
 	FragPos = vec3(model * vec4(aPos, 1.0));
-	TexCoords = aTexCoords;
+	
+	
+	TexCoords = vec2(aTexCoords.x, aTexCoords.y+(time/6.0f));
 	Normal = normalMat * aNormal;
 
 	vec3 T = normalize(normalMat * aTangent);

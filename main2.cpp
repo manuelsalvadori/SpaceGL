@@ -39,6 +39,8 @@ int main( void )
 	glDepthFunc(GL_LESS); // z-buffer
 
 	Shader simpleShader = Shader("src/shaders/matBlinnPhong.vs", "src/shaders/matBlinnPhong.fs");
+	Shader landShader = Shader("src/shaders/matLand.vs","src/shaders/matLand.fs");
+	Shader asteroidShader = Shader("src/shaders/matAsteroid.vs","src/shaders/matAsteroid.fs");
 	Shader shadowShader = Shader("src/shaders/shadowMap.vs","src/shaders/shadowMap.fs");
 	Shader debugDepthQuad = Shader("src/shaders/debug.vs","src/shaders/debug.fs");
 	GLuint simpleShaderID = simpleShader.getID();
@@ -94,7 +96,9 @@ int main( void )
 	// shader configuration
 	// --------------------
 	simpleShader.use();
-/**/	simpleShader.setInt("shadowMap", 0);
+	/**/	simpleShader.setInt("shadowMap", 0);
+	landShader.use();
+	/**/	landShader.setInt("shadowMap", 0);
 	debugDepthQuad.use();
 	debugDepthQuad.setInt("depthMap", 0);
 
@@ -125,8 +129,9 @@ int main( void )
 
 		// land
 		land_transform = glm::mat4();
-		land_transform = glm::translate(land_transform, glm::vec3(0.0f, -8.0f, -1000+glfwGetTime()*100));
-		land_transform = glm::scale(land_transform, glm::vec3(1000.0f, 30.0f, 1000.0f));
+		//land_transform = glm::translate(land_transform, glm::vec3(0.0f, -8.0f, -1000+glfwGetTime()*100));
+		land_transform = glm::translate(land_transform, glm::vec3(0.0f, -8.0f, 0.0f));
+		land_transform = glm::scale(land_transform, glm::vec3(200.0f, 10.0f, 200.0f));
 
 
 		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
@@ -162,7 +167,7 @@ int main( void )
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
-		Utilities::renderScene(shadowShader, falcon, falcon_transform, land, land_transform, asteroid, ast_transform);
+		Utilities::renderScene(shadowShader, falcon, falcon_transform, asteroid, ast_transform);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		// reset viewport
@@ -180,6 +185,7 @@ int main( void )
 
 		simpleShader.use();
 		simpleShader.setVec3("light.position", lightPos);
+		simpleShader.setVec3("lightPos", lightPos);
 		simpleShader.setVec3("viewPos", camPos);
 		simpleShader.setMat4("view", view_matrix);
 		simpleShader.setMat4("projection", projection_matrix);
@@ -190,7 +196,7 @@ int main( void )
 		glm::vec3 lightColor;
 		lightColor.x = 1.0f;
 		lightColor.y = 1.0f;
-		lightColor.z = 1.0f;
+		lightColor.z = 0.95f;
 		glm::vec3 diffuseColor = lightColor   * glm::vec3(0.8f); // decrease the influence
 		glm::vec3 ambientColor = diffuseColor * glm::vec3(0.4f); // low influence
 		simpleShader.setVec3("light.ambient", ambientColor);
@@ -201,14 +207,70 @@ int main( void )
 		//		simpleShader.setVec3("material.ambient", 0.5f, 0.5f, 0.5f);
 		//		simpleShader.setVec3("material.diffuse", 1.0f, 1.0f, 1.0f);
 		//		simpleShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
-		simpleShader.setVec3("material.ambient", 0.5f, 0.5f, 0.5f);
-		simpleShader.setVec3("material.diffuse", 0.84f, 0.84f, 0.84f);
-		simpleShader.setVec3("material.specular", 0.2f, 0.2f, 0.2f);
+		simpleShader.setVec3("material.ambient", 0.3f, 0.3f, 0.3f);
+		simpleShader.setVec3("material.diffuse", 0.74f, 0.74f, 0.74f);
+		simpleShader.setVec3("material.specular", 0.6f, 0.6f, 0.6f);
 		simpleShader.setFloat("material.shininess", shininess);
+
+		/**/		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthMap);
+		Utilities::renderFalcon(simpleShader, falcon, falcon_transform);
+
+		// render asteroids
+		asteroidShader.use();
+		asteroidShader.setVec3("light.position", lightPos);
+		asteroidShader.setVec3("lightPos", lightPos);
+		asteroidShader.setVec3("viewPos", camPos);
+		asteroidShader.setMat4("view", view_matrix);
+		asteroidShader.setMat4("projection", projection_matrix);
+		asteroidShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+		asteroidShader.setVec3("light.ambient", ambientColor);
+		asteroidShader.setVec3("light.diffuse", diffuseColor);
+		asteroidShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+
+		// material properties
+		//		simpleShader.setVec3("material.ambient", 0.5f, 0.5f, 0.5f);
+		//		simpleShader.setVec3("material.diffuse", 1.0f, 1.0f, 1.0f);
+		//		simpleShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+		asteroidShader.setVec3("material.ambient", 0.3f, 0.3f, 0.3f);
+		asteroidShader.setVec3("material.diffuse", 0.84f, 0.84f, 0.84f);
+		asteroidShader.setVec3("material.specular", 0.3f, 0.3f, 0.3f);
+		asteroidShader.setFloat("material.shininess", 32.0f);
 
 /**/		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
-		Utilities::renderScene(simpleShader, falcon, falcon_transform, land, land_transform, asteroid, ast_transform);
+
+		Utilities::renderAsteroids(asteroidShader, asteroid, ast_transform);
+
+		// render land
+
+		landShader.use();
+		landShader.setVec3("light.position", lightPos);
+		landShader.setVec3("lightPos", lightPos);
+		landShader.setVec3("viewPos", camPos);
+		landShader.setMat4("view", view_matrix);
+		landShader.setMat4("projection", projection_matrix);
+
+		landShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+		// light properties
+
+		landShader.setVec3("light.ambient", ambientColor);
+		landShader.setVec3("light.diffuse", diffuseColor);
+		landShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+
+		// material properties
+
+		landShader.setVec3("material.ambient", 0.5f, 0.5f, 0.5f);
+		landShader.setVec3("material.diffuse", 0.84f, 0.84f, 0.84f);
+		landShader.setVec3("material.specular", 0.2f, 0.2f, 0.2f);
+		landShader.setFloat("material.shininess", shininess);
+		landShader.setFloat("time", (float)glfwGetTime());
+
+/**/		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthMap);
+		Utilities::renderLand(landShader, land, land_transform);
 
 		// render Depth map to quad for visual debugging
 		// ---------------------------------------------
@@ -241,7 +303,8 @@ void renderQuad()
 {
 	if (quadVAO == 0)
 	{
-		float quadVertices[] = {
+		float quadVertices[] =
+		{
 				// positions        // texture Coords
 				-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
 				-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
