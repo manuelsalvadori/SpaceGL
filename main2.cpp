@@ -42,6 +42,7 @@ int main( void )
 	Shader landShader = Shader("src/shaders/matLand.vs","src/shaders/matLand.fs");
 	Shader asteroidShader = Shader("src/shaders/matAsteroid.vs","src/shaders/matAsteroid.fs");
 	Shader shadowShader = Shader("src/shaders/shadowMap.vs","src/shaders/shadowMap.fs");
+	Shader skyShader = Shader("src/shaders/matSky.vs","src/shaders/matSky.fs");
 	Shader debugDepthQuad = Shader("src/shaders/debug.vs","src/shaders/debug.fs");
 	GLuint simpleShaderID = simpleShader.getID();
 
@@ -58,6 +59,8 @@ int main( void )
 	glm::mat4 falcon_transform;
 	Model land("src/falcon/cube.obj");
 	glm::mat4 land_transform;
+	Model sky("src/skybox/sky.obj");
+	glm::mat4 sky_transform = glm::mat4();
 
 	float deltaY = -4.0f;
 	float deltaX = 0.0f;
@@ -112,9 +115,10 @@ int main( void )
 
 		// transformation matrices
 		ast_transform = glm::mat4();
-		ast_transform = glm::rotate(ast_transform, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
-		//transform = glm::rotate(ast_transform, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
-		//transform = glm::rotate(ast_transform, (float)glfwGetTime()*12, glm::vec3(0.0f, 0.0f, 1.0f));
+		Utilities::asteroidsTransform(ast_transform, glm::vec3(0.f), (float)glfwGetTime(), (float)glfwGetTime()*0.5f, (float)glfwGetTime()*0.2f);
+//		ast_transform = glm::rotate(ast_transform, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
+//		ast_transform = glm::rotate(ast_transform, (float)glfwGetTime()*0.5f, glm::vec3(0.0f, 1.0f, 0.0f));
+//		ast_transform = glm::rotate(ast_transform, (float)glfwGetTime()*0.2f, glm::vec3(0.0f, 0.0f, 1.0f));
 
 		// falcon movement
 		Utilities::movementHandler(window, deltaTime, rotSpeed, deltaX, deltaY, rotX, rotZ);
@@ -129,23 +133,13 @@ int main( void )
 
 		// land
 		land_transform = glm::mat4();
-		//land_transform = glm::translate(land_transform, glm::vec3(0.0f, -8.0f, -1000+glfwGetTime()*100));
 		land_transform = glm::translate(land_transform, glm::vec3(0.0f, -8.0f, 0.0f));
 		land_transform = glm::scale(land_transform, glm::vec3(200.0f, 10.0f, 200.0f));
 
-
-		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-		{
-			lightPos.x ++;
-		}
-		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-		{
-			lightPos.x --;
-		}
+		Utilities::moveLight(window, lightPos);
 
 		// depth texture
 
-		// ------
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -181,7 +175,10 @@ int main( void )
 		glfwGetWindowSize(window, &width, &height);
 
 		// shader setting
-		projection_matrix = glm::perspective(glm::radians(45.0f), (float)width/(float)height, 0.1f, 150.0f);
+		projection_matrix = glm::perspective(glm::radians(45.0f), (float)width/(float)height, 0.1f, 160.0f);
+		skyShader.use();
+		skyShader.setMat4("view", view_matrix);
+		skyShader.setMat4("projection", projection_matrix);
 
 		simpleShader.use();
 		simpleShader.setVec3("light.position", lightPos);
@@ -238,13 +235,12 @@ int main( void )
 		asteroidShader.setVec3("material.specular", 0.3f, 0.3f, 0.3f);
 		asteroidShader.setFloat("material.shininess", 32.0f);
 
-/**/		glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 
 		Utilities::renderAsteroids(asteroidShader, asteroid, ast_transform);
 
 		// render land
-
 		landShader.use();
 		landShader.setVec3("light.position", lightPos);
 		landShader.setVec3("lightPos", lightPos);
@@ -268,9 +264,17 @@ int main( void )
 		landShader.setFloat("material.shininess", shininess);
 		landShader.setFloat("time", (float)glfwGetTime());
 
-/**/		glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		Utilities::renderLand(landShader, land, land_transform);
+
+		skyShader.use();
+		sky_transform = glm::mat4();
+		sky_transform = glm::scale(sky_transform, glm::vec3(19.3f, 19.3f, 1.f));
+		sky_transform = glm::translate(sky_transform, glm::vec3(0.f, 0.f, -140.f));
+		skyShader.setMat4("model", sky_transform);
+		sky.Draw(skyShader);
+
 
 		// render Depth map to quad for visual debugging
 		// ---------------------------------------------

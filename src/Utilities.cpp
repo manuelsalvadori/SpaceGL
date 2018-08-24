@@ -97,22 +97,8 @@ void Utilities::movementHandler(GLFWwindow *window, float &deltaTime, float &rot
 
 void Utilities::renderScene(Shader shader, Model &falcon, glm::mat4 &falcon_transform, Model &asteroid, glm::mat4 &ast_transform)
 {
-
-	glm::mat4 normalMat = glm::inverseTranspose(glm::mat3(ast_transform));
-	shader.setMat4("model", ast_transform);
-	shader.setMat3("normalMat", normalMat);
-	asteroid.Draw(shader);
-
-	ast_transform = glm::translate(ast_transform, glm::vec3(-2.f,0.f,0.f));
-	normalMat = glm::inverseTranspose(glm::mat3(ast_transform));
-	shader.setMat4("model", ast_transform);
-	shader.setMat3("normalMat", normalMat);
-	asteroid.Draw(shader);
-
-	normalMat = glm::inverseTranspose(glm::mat3(falcon_transform));
-	shader.setMat4("model", falcon_transform);
-	shader.setMat3("normalMat", normalMat);
-	falcon.Draw(shader);
+	renderAsteroids(shader, asteroid, ast_transform);
+	renderFalcon(shader, falcon, falcon_transform);
 }
 
 void Utilities::renderFalcon(Shader shader, Model &falcon, glm::mat4 &falcon_transform)
@@ -132,12 +118,6 @@ void Utilities::renderAsteroids(Shader shader, Model &asteroid, glm::mat4 &ast_t
 	shader.setMat3("normalMat", normalMat);
 	asteroid.Draw(shader);
 
-	ast_transform = glm::translate(ast_transform, glm::vec3(-2.f,0.f,0.f));
-	normalMat = glm::inverseTranspose(glm::mat3(ast_transform));
-	shader.setMat4("model", ast_transform);
-	shader.setMat3("normalMat", normalMat);
-	asteroid.Draw(shader);
-
 }
 
 void Utilities::renderLand(Shader shader, Model &land, glm::mat4 &land_transform)
@@ -149,3 +129,31 @@ void Utilities::renderLand(Shader shader, Model &land, glm::mat4 &land_transform
 	land.Draw(shader);
 }
 
+void Utilities::asteroidsTransform(glm::mat4 &ast_transform, glm::vec3 traslate, float rotx, float roty, float rotz, float scale)
+{
+	ast_transform = glm::rotate(ast_transform, rotx, glm::vec3(1.0f, 0.0f, 0.0f));
+	ast_transform = glm::rotate(ast_transform, roty, glm::vec3(0.0f, 1.0f, 0.0f));
+	ast_transform = glm::rotate(ast_transform, rotz, glm::vec3(0.0f, 0.0f, 1.0f));
+	ast_transform = glm::translate(ast_transform, traslate);
+	ast_transform = glm::scale(ast_transform, glm::vec3(scale));
+}
+
+void Utilities::moveLight(GLFWwindow *window, glm::vec3 &lightPos)
+{
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	{
+		lightPos.z ++;
+	}
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	{
+		lightPos.z --;
+	}
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+	{
+		lightPos.x ++;
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+	{
+		lightPos.x --;
+	}
+}
