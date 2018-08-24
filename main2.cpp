@@ -53,7 +53,7 @@ int main( void )
 	glm::mat4 view_matrix = glm::lookAt(camPos, glm::vec3(0,0,0), glm::vec3(0,1,0));
 	glm::mat3 normalMat;
 
-	Model asteroid("src/asteroid/icosphere.obj");
+	Model asteroid("src/asteroid/icosphere2.obj");
 	glm::mat4 ast_transform;
 	Model falcon("src/falcon/Millennium_Falcon.obj");
 	glm::mat4 falcon_transform;
@@ -98,6 +98,11 @@ int main( void )
 
 	// shader configuration
 	// --------------------
+	skyShader.use();
+	sky_transform = glm::mat4();
+	sky_transform = glm::scale(sky_transform, glm::vec3(19.5f, 19.5f, 1.f));
+	sky_transform = glm::translate(sky_transform, glm::vec3(0.f, 0.f, -140.f));
+	skyShader.setMat4("model", sky_transform);
 	simpleShader.use();
 	/**/	simpleShader.setInt("shadowMap", 0);
 	landShader.use();
@@ -107,6 +112,7 @@ int main( void )
 
 	// game loop -----------------------------------------------------------------------------------------------------------
 
+	float z = 0.f;
 	while(glfwWindowShouldClose(window) == 0)
 	{
 		float currentFrame = glfwGetTime();
@@ -115,10 +121,17 @@ int main( void )
 
 		// transformation matrices
 		ast_transform = glm::mat4();
-		Utilities::asteroidsTransform(ast_transform, glm::vec3(0.f), (float)glfwGetTime(), (float)glfwGetTime()*0.5f, (float)glfwGetTime()*0.2f);
-//		ast_transform = glm::rotate(ast_transform, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
-//		ast_transform = glm::rotate(ast_transform, (float)glfwGetTime()*0.5f, glm::vec3(0.0f, 1.0f, 0.0f));
-//		ast_transform = glm::rotate(ast_transform, (float)glfwGetTime()*0.2f, glm::vec3(0.0f, 0.0f, 1.0f));
+		if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+		{
+			z ++;
+		}
+		if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
+		{
+			z --;
+		}
+		std::cout << z << endl;
+		Utilities::asteroidsTransform(ast_transform, glm::vec3(0.f, 0.f,z), (float)glfwGetTime(), (float)glfwGetTime()*0.5f, (float)glfwGetTime()*0.2f, glm::vec3(1.f,0.6f,1.f));
+		//Utilities::asteroidsTransform(ast_transform, glm::vec3(0.f, 0.f,z), 0.f,0.f,0.f);
 
 		// falcon movement
 		Utilities::movementHandler(window, deltaTime, rotSpeed, deltaX, deltaY, rotX, rotZ);
@@ -268,11 +281,9 @@ int main( void )
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		Utilities::renderLand(landShader, land, land_transform);
 
+
+		// sky render
 		skyShader.use();
-		sky_transform = glm::mat4();
-		sky_transform = glm::scale(sky_transform, glm::vec3(19.3f, 19.3f, 1.f));
-		sky_transform = glm::translate(sky_transform, glm::vec3(0.f, 0.f, -140.f));
-		skyShader.setMat4("model", sky_transform);
 		sky.Draw(skyShader);
 
 

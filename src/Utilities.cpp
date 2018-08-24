@@ -129,13 +129,15 @@ void Utilities::renderLand(Shader shader, Model &land, glm::mat4 &land_transform
 	land.Draw(shader);
 }
 
-void Utilities::asteroidsTransform(glm::mat4 &ast_transform, glm::vec3 traslate, float rotx, float roty, float rotz, float scale)
+void Utilities::asteroidsTransform(glm::mat4 &ast_transform, glm::vec3 traslate, float rotx, float roty, float rotz, glm::vec3 scale)
 {
+	ast_transform = glm::translate(ast_transform, traslate);
 	ast_transform = glm::rotate(ast_transform, rotx, glm::vec3(1.0f, 0.0f, 0.0f));
 	ast_transform = glm::rotate(ast_transform, roty, glm::vec3(0.0f, 1.0f, 0.0f));
 	ast_transform = glm::rotate(ast_transform, rotz, glm::vec3(0.0f, 0.0f, 1.0f));
-	ast_transform = glm::translate(ast_transform, traslate);
-	ast_transform = glm::scale(ast_transform, glm::vec3(scale));
+	ast_transform = glm::scale(ast_transform, scale);
+
+
 }
 
 void Utilities::moveLight(GLFWwindow *window, glm::vec3 &lightPos)

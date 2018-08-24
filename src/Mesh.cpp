@@ -16,6 +16,7 @@ void Mesh::Draw(Shader shader)
 	unsigned int specularNr = 1;
 	unsigned int normalNr   = 1;
 	unsigned int heightNr   = 1;
+	unsigned int emissionNr = 1;
 	for(unsigned int i = 0; i < textures.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i+1); // active proper texture unit before binding // i+n per n texture in più!
@@ -30,6 +31,8 @@ void Mesh::Draw(Shader shader)
 			number = std::to_string(normalNr++); // transfer unsigned int to stream
 		else if(name == "texture_height")
 			number = std::to_string(heightNr++); // transfer unsigned int to stream
+		else if(name == "texture_emission")
+			number = std::to_string(emissionNr++); // transfer unsigned int to stream
 
 		// now set the sampler to the correct texture unit
 		glUniform1i(glGetUniformLocation(shader.getID(), (name + number).c_str()), i+1); // i+n per n texture in più!

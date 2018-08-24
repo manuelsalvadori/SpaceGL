@@ -31,6 +31,7 @@ uniform Material material;
 uniform Light light;
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_normal1;
+uniform sampler2D texture_emission1;
 uniform sampler2D shadowMap;
 uniform bool falcon;
 
@@ -81,6 +82,7 @@ void main()
 	normal = normalize(normal * 2.0 - 1.0);  // this normal is in tangent space
 
 	vec3 color = texture(texture_diffuse1, TexCoords).rgb;
+	vec3 emission = texture(texture_emission1, TexCoords).rgb;
 
 	// ambient
 	vec3 ambient = 0.5 * color * light.ambient * material.ambient;
@@ -105,7 +107,7 @@ void main()
 
 	// calculate shadow
 	float shadow = ShadowCalculation(FragPosLightSpace);                    
-	vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular));  
+	vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) + emission;  
 
 	FragColor = vec4(lighting, 1.0);
 }

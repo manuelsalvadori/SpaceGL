@@ -1,5 +1,5 @@
 # 
-# 
+# map_emissive or map_Ke
 
 newmtl MillenniumFalconBottom
 Ns 96.078431
@@ -24,4 +24,5 @@ illum 1
 map_Kd Millennium_Falcon_Top_D.tga
 map_Bump Millennium_Falcon_Top_N.tga
 map_Ks Millennium_Falcon_Top_S.tga
+map_Ke Millennium_Falcon_Top_E.tga
 
