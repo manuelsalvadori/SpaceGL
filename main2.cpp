@@ -153,10 +153,10 @@ int main( void )
 		// --------------------------------------------------------------
 		glm::mat4 lightProjection, lightView;
 		glm::mat4 lightSpaceMatrix;
-		float near_plane = 1.0f, far_plane = 175.0f;
+		float near_plane = 50.0f, far_plane = 275.0f;
 		//lightProjection = glm::perspective(glm::radians(45.0f), (GLfloat)SHADOW_WIDTH / (GLfloat)SHADOW_HEIGHT, near_plane, far_plane); // note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene
 		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-		lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+		lightView = glm::lookAt(lightPos, glm::vec3(0.0f,0.0f,0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		lightSpaceMatrix = lightProjection * lightView;
 		// render scene from light's point of view
 		shadowShader.use();
@@ -181,7 +181,7 @@ int main( void )
 		glfwGetWindowSize(window, &width, &height);
 
 		// shader setting
-		projection_matrix = glm::perspective(glm::radians(45.0f), (float)width/(float)height, 0.1f, 100.0f);
+		projection_matrix = glm::perspective(glm::radians(45.0f), (float)width/(float)height, 0.1f, 150.0f);
 
 		simpleShader.use();
 		simpleShader.setVec3("light.position", lightPos);
@@ -212,7 +212,7 @@ int main( void )
 		simpleShader.setVec3("material.specular", 0.6f, 0.6f, 0.6f);
 		simpleShader.setFloat("material.shininess", shininess);
 
-		/**/		glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		Utilities::renderFalcon(simpleShader, falcon, falcon_transform);
 
@@ -274,12 +274,12 @@ int main( void )
 
 		// render Depth map to quad for visual debugging
 		// ---------------------------------------------
-		debugDepthQuad.use();
-		debugDepthQuad.setFloat("near_plane", near_plane);
-		debugDepthQuad.setFloat("far_plane", far_plane);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, depthMap);
-		//renderQuad();
+//		debugDepthQuad.use();
+//		debugDepthQuad.setFloat("near_plane", near_plane);
+//		debugDepthQuad.setFloat("far_plane", far_plane);
+//		glActiveTexture(GL_TEXTURE0);
+//		glBindTexture(GL_TEXTURE_2D, depthMap);
+//		renderQuad();
 
 		// Swap buffers
 		glfwSwapBuffers(window);

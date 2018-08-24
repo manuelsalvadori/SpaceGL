@@ -51,7 +51,7 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 	float currentDepth = projCoords.z;
 	// calculate bias (based on depth map resolution and slope)
 	vec3 normal = normalize(Normal);
-	vec3 lightDir = normalize(light.position - FragPos);
+	vec3 lightDir = normalize(FragPos -light.position); //- FragPos);//???
 	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
 	// PCF
 	float shadow = 0.0;
@@ -104,7 +104,7 @@ void main()
 	//FragColor = vec4(ambient + diffuse + specular, 1.0); // no shadows 
 
 	// calculate shadow
-	float shadow = ShadowCalculation(FragPosLightSpace) * 0.8f;                    
+	float shadow = ShadowCalculation(FragPosLightSpace);                    
 	vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular));  
 
 	FragColor = vec4(lighting, 1.0);
