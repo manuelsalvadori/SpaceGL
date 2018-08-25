@@ -246,7 +246,7 @@ int main( void )
 		asteroidShader.setVec3("material.ambient", 0.3f, 0.3f, 0.3f);
 		asteroidShader.setVec3("material.diffuse", 0.84f, 0.84f, 0.84f);
 		asteroidShader.setVec3("material.specular", 0.3f, 0.3f, 0.3f);
-		asteroidShader.setFloat("material.shininess", 32.0f);
+		asteroidShader.setFloat("material.shininess", 22.0f);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);

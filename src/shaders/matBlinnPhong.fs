@@ -31,6 +31,7 @@ uniform Material material;
 uniform Light light;
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_normal1;
+uniform sampler2D texture_specular1;
 uniform sampler2D texture_emission1;
 uniform sampler2D shadowMap;
 uniform bool falcon;
@@ -102,7 +103,7 @@ void main()
 	vec3 halfwayDir = normalize(lightDir + viewDir);  
 	float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess) * when_gt(diff, 0.0f);
 
-	vec3 specular = light.specular * (spec * material.specular);  //vec3(0.3) * spec; // assuming bright white light color
+	vec3 specular = light.specular * spec * texture(texture_specular1, TexCoords).rgb*2.0f;    //vec3(0.3) * spec; // assuming bright white light color
 	//FragColor = vec4(ambient + diffuse + specular, 1.0); // no shadows 
 
 	// calculate shadow
