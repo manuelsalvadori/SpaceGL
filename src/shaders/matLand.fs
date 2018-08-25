@@ -1,5 +1,6 @@
 #version 330 core
-out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 
 struct Material
 {
@@ -108,4 +109,5 @@ void main()
 	vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular));  
 
 	FragColor = vec4(lighting, 1.0);
+	BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 }

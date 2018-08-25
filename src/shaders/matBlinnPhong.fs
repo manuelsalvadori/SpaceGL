@@ -1,5 +1,6 @@
 #version 330 core
-out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 
 struct Material
 {
@@ -109,6 +110,12 @@ void main()
 	// calculate shadow
 	float shadow = ShadowCalculation(FragPosLightSpace);                    
 	vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) + emission;  
+
+	// bloom
+	if(dot(emission, vec3(0.299, 0.587, 0.114)) > 0.1)
+		BrightColor = vec4(lighting * vec3(1.8f,1.8f,2.3f), 1.0);
+	else
+		BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 
 	FragColor = vec4(lighting, 1.0);
 }
