@@ -37,6 +37,8 @@ int main( void )
 	glEnable(GL_CULL_FACE); // backface culling
 	glEnable(GL_DEPTH_TEST); // z-buffer
 	glDepthFunc(GL_LESS); // z-buffer
+	glEnable(GL_BLEND); // transparency
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // transparency
 
 	Shader simpleShader = Shader("src/shaders/matBlinnPhong.vs", "src/shaders/matBlinnPhong.fs");
 	Shader landShader = Shader("src/shaders/matLand.vs","src/shaders/matLand.fs");
@@ -45,6 +47,7 @@ int main( void )
 	Shader skyShader = Shader("src/shaders/matSky.vs","src/shaders/matSky.fs");
 	Shader blurShader = Shader("src/shaders/blur.vs","src/shaders/blur.fs");
 	Shader bloomShader = Shader("src/shaders/bloom.vs","src/shaders/bloom.fs");
+	Shader holoShader = Shader("src/shaders/holoShader.vs","src/shaders/holoShader.fs");
 	//Shader debugDepthQuad = Shader("src/shaders/debug.vs","src/shaders/debug.fs");
 	GLuint simpleShaderID = simpleShader.getID();
 
@@ -110,7 +113,7 @@ int main( void )
 	for (unsigned int i = 0; i < 2; i++)
 	{
 		glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
@@ -141,7 +144,7 @@ int main( void )
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]);
 		glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[i]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
@@ -348,6 +351,28 @@ int main( void )
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		Utilities::renderLand(landShader, land, land_transform);
+
+
+		holoShader.use();
+		holoShader.setFloat("g_Time", (float)glfwGetTime());
+		holoShader.setMat4("view", view_matrix);
+		holoShader.setMat4("projection", projection_matrix);
+		holoShader.setFloat("m_GlitchSpeed", 1.0f);
+		holoShader.setFloat("m_GlitchIntensity", 1.0f);
+		holoShader.setFloat("m_BarSpeed", 1.0f);
+		holoShader.setFloat("m_BarDistance", 1.0f);
+		holoShader.setFloat("m_Alpha", 1.0f);
+		holoShader.setFloat("m_FlickerSpeed", 1.0f);
+		holoShader.setFloat("m_RimPower", 1.0f);
+		holoShader.setFloat("m_GlowSpeed", 1.0f);
+		holoShader.setFloat("m_GlowDistance", 1.0f);
+		holoShader.setVec4("m_RimColor", glm::vec4(1.f,1.f,1.f,1.f));
+		holoShader.setVec4("m_MainColor", glm::vec4(0.5f,0.5f,1.f,1.f));
+
+		glm::mat4 t = glm::mat4();
+		t = glm::translate(t, glm::vec3(-1.f,-1.f,0.f));
+		t = glm::scale(t, glm::vec3(0.01f, 0.01f, 0.01f));
+		Utilities::renderFalcon(holoShader, falcon, t);
 
 
 		// sky render

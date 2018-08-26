@@ -139,7 +139,6 @@ float when_gt(float x, float y)
 
 void main()
 {
-	
 	TexCoords = aTexCoords;
 	Normal = normalMat * aNormal;
 
@@ -151,8 +150,6 @@ void main()
 	vec3 newPos = aPos + (aNormal * max(displacement,0.f));
 	FragPos = vec3(model * vec4(newPos, 1.0));
 	
-	//FragPos = vec3(model * vec4(aPos, 1.0)) + (Normal * displacement);//max(displacement, 0.f));
-
 	// normal mapping
 	vec3 T = normalize(normalMat * aTangent);
 	vec3 N = normalize(normalMat * aNormal);

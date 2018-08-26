@@ -103,7 +103,6 @@ void Utilities::renderScene(Shader shader, Model &falcon, glm::mat4 &falcon_tran
 
 void Utilities::renderFalcon(Shader shader, Model &falcon, glm::mat4 &falcon_transform)
 {
-
 	glm::mat4 normalMat = glm::inverseTranspose(glm::mat3(falcon_transform));
 	shader.setMat4("model", falcon_transform);
 	shader.setMat3("normalMat", normalMat);
@@ -112,12 +111,10 @@ void Utilities::renderFalcon(Shader shader, Model &falcon, glm::mat4 &falcon_tra
 
 void Utilities::renderAsteroids(Shader shader, Model &asteroid, glm::mat4 &ast_transform)
 {
-
 	glm::mat4 normalMat = glm::inverseTranspose(glm::mat3(ast_transform));
 	shader.setMat4("model", ast_transform);
 	shader.setMat3("normalMat", normalMat);
 	asteroid.Draw(shader);
-
 }
 
 void Utilities::renderLand(Shader shader, Model &land, glm::mat4 &land_transform)
@@ -135,8 +132,6 @@ void Utilities::asteroidsTransform(glm::mat4 &ast_transform, glm::vec3 traslate,
 	ast_transform = glm::rotate(ast_transform, roty, glm::vec3(0.0f, 1.0f, 0.0f));
 	ast_transform = glm::rotate(ast_transform, rotz, glm::vec3(0.0f, 0.0f, 1.0f));
 	ast_transform = glm::scale(ast_transform, scale);
-
-
 }
 
 void Utilities::moveLight(GLFWwindow *window, glm::vec3 &lightPos)
