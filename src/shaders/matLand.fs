@@ -33,7 +33,6 @@ uniform Light light;
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_normal1;
 uniform sampler2D shadowMap;
-uniform bool falcon;
 
 float when_gt(float x, float y)
 {
@@ -76,12 +75,16 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 
 void main()
 {
+	//vec3 viewDir = normalize(viewPos - FragPos);
+	vec3 viewDir = normalize(TangentViewPos - TangentFragPos);
+    vec2 texCoords = TexCoords;
+
 	// obtain normal from normal map in range [0,1]
-	vec3 normal = texture(texture_normal1, TexCoords).rgb;
+	vec3 normal = texture(texture_normal1, texCoords).rgb;
 	// transform normal vector to range [-1,1]
 	normal = normalize(normal * 2.0 - 1.0);  // this normal is in tangent space
 
-	vec3 color = texture(texture_diffuse1, TexCoords).rgb;
+	vec3 color = texture(texture_diffuse1, texCoords).rgb + FragPos.z/110.f;
 
 	// ambient
 	vec3 ambient = 0.5 * color * light.ambient * material.ambient;
@@ -95,8 +98,6 @@ void main()
 	vec3 diffuse = light.diffuse * (diff * color * material.diffuse);//diff * color;
 
 	// specular
-	//vec3 viewDir = normalize(viewPos - FragPos);
-	vec3 viewDir = normalize(TangentViewPos - TangentFragPos);
 	vec3 reflectDir = reflect(-lightDir, normal);
 	vec3 halfwayDir = normalize(lightDir + viewDir);  
 	float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess) * when_gt(diff, 0.0f);

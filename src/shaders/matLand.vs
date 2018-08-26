@@ -31,8 +31,8 @@ void main()
 {
 	FragPos = vec3(model * vec4(aPos, 1.0));
 	
-	
-	TexCoords = vec2(aTexCoords.x, aTexCoords.y+(time/6.0f));
+	//TexCoords = aTexCoords;
+	TexCoords = vec2(aTexCoords.x, aTexCoords.y+(time/3.0f));
 	Normal = normalMat * aNormal;
 
 	vec3 T = normalize(normalMat * aTangent);

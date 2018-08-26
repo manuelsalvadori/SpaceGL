@@ -35,7 +35,7 @@ uniform sampler2D texture_normal1;
 uniform sampler2D texture_specular1;
 uniform sampler2D texture_emission1;
 uniform sampler2D shadowMap;
-uniform bool falcon;
+uniform float time;
 
 float when_gt(float x, float y)
 {
@@ -112,8 +112,8 @@ void main()
 	vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) + emission;  
 
 	// bloom
-	if(dot(emission, vec3(0.299, 0.587, 0.114)) > 0.1)
-		BrightColor = vec4(lighting * vec3(1.8f,1.8f,2.3f), 1.0);
+	if(dot(emission, vec3(0.299, 0.587, 0.114)) > 0.2)
+		BrightColor = vec4(lighting * (vec3(1.f,1.f,1.5f)*((sin(time*10.f)+1.f)/3.f)+1.f), 1.0);
 	else
 		BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 

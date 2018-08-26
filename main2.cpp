@@ -153,12 +153,11 @@ int main( void )
 	}
 
 
-
 	// shader configuration
 	// --------------------
 	skyShader.use();
 	sky_transform = glm::mat4();
-	sky_transform = glm::scale(sky_transform, glm::vec3(19.5f, 19.5f, 1.f));
+	sky_transform = glm::scale(sky_transform, glm::vec3(20.5f, 20.5f, 1.f));
 	sky_transform = glm::translate(sky_transform, glm::vec3(0.f, 0.f, -140.f));
 	skyShader.setMat4("model", sky_transform);
 	simpleShader.use();
@@ -182,6 +181,7 @@ int main( void )
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
+		//cout << 1.f/deltaTime << endl;
 
 		// transformation matrices
 		ast_transform = glm::mat4();
@@ -193,7 +193,7 @@ int main( void )
 		{
 			z --;
 		}
-		std::cout << z << endl;
+		//std::cout << z << endl;
 		Utilities::asteroidsTransform(ast_transform, glm::vec3(0.f, 0.f,z), (float)glfwGetTime(), (float)glfwGetTime()*0.5f, (float)glfwGetTime()*0.2f, glm::vec3(1.f,0.6f,1.f));
 		//Utilities::asteroidsTransform(ast_transform, glm::vec3(0.f, 0.f,z), 0.f,0.f,0.f);
 
@@ -210,8 +210,9 @@ int main( void )
 
 		// land
 		land_transform = glm::mat4();
-		land_transform = glm::translate(land_transform, glm::vec3(0.0f, -8.0f, 0.0f));
-		land_transform = glm::scale(land_transform, glm::vec3(200.0f, 10.0f, 200.0f));
+		land_transform = glm::translate(land_transform, glm::vec3(0.0f, -11.f, 4.0f));
+		land_transform = glm::rotate(land_transform, 0.1f, glm::vec3(1.0f, 0.f, 0.0f));
+		land_transform = glm::scale(land_transform, glm::vec3(40.0f, 10.0f, 40.0f));
 
 		Utilities::moveLight(window, lightPos);
 
@@ -254,7 +255,7 @@ int main( void )
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// shader setting
-		projection_matrix = glm::perspective(glm::radians(45.0f), (float)width/(float)height, 0.1f, 160.0f);
+		projection_matrix = glm::perspective(glm::radians(45.0f), (float)width/(float)height, 0.1f, 180.0f);
 		skyShader.use();
 		skyShader.setMat4("view", view_matrix);
 		skyShader.setMat4("projection", projection_matrix);
@@ -287,6 +288,7 @@ int main( void )
 		simpleShader.setVec3("material.diffuse", 0.74f, 0.74f, 0.74f);
 		simpleShader.setVec3("material.specular", 0.6f, 0.6f, 0.6f);
 		simpleShader.setFloat("material.shininess", shininess);
+		simpleShader.setFloat("time", (float)glfwGetTime());
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
@@ -360,9 +362,8 @@ int main( void )
 		// 2. blur bright fragments with two-pass Gaussian Blur
 		// --------------------------------------------------
 		bool horizontal = true, first_iteration = true;
-		unsigned int amount = 10;
 		blurShader.use();
-		for (unsigned int i = 0; i < amount; i++)
+		for (unsigned int i = 0; i < 6; i++)
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
 			blurShader.setInt("horizontal", horizontal);

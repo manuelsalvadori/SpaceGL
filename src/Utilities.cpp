@@ -122,7 +122,6 @@ void Utilities::renderAsteroids(Shader shader, Model &asteroid, glm::mat4 &ast_t
 
 void Utilities::renderLand(Shader shader, Model &land, glm::mat4 &land_transform)
 {
-
 	glm::mat4 normalMat = glm::inverseTranspose(glm::mat3(land_transform));
 	shader.setMat4("model", land_transform);
 	shader.setMat3("normalMat", normalMat);
