@@ -31,12 +31,12 @@ int main( void )
 
 	Utilities::GLEW_init();
 
-	glClearColor(0.1f, 0.0f, 0.1f, 0.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	glEnable(GL_MULTISAMPLE); // anti-aliasing
 	glEnable(GL_CULL_FACE); // backface culling
 	glEnable(GL_DEPTH_TEST); // z-buffer
-	glDepthFunc(GL_LESS); // z-buffer
+	glDepthFunc(GL_LEQUAL); // z-buffer
 	glEnable(GL_BLEND); // transparency
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // transparency
 
@@ -66,6 +66,7 @@ int main( void )
 	glm::mat4 land_transform;
 	Model sky("src/skybox/sky.obj");
 	glm::mat4 sky_transform = glm::mat4();
+	Model vader("src/falcon/vader.obj");
 
 	float deltaY = -4.0f;
 	float deltaX = 0.0f;
@@ -155,7 +156,6 @@ int main( void )
 			std::cout << "Framebuffer not complete!" << std::endl;
 	}
 
-
 	// shader configuration
 	// --------------------
 	skyShader.use();
@@ -221,7 +221,7 @@ int main( void )
 
 		// depth texture
 
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// 1. render depth of scene to texture (from light's perspective)
@@ -247,11 +247,10 @@ int main( void )
 
 		// reset viewport
 		glViewport(0, 0, width, height);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// 2. render scene as normal using the generated depth/shadow map
 		// regular rendering -------------------------------------------------------------------------------------------
-
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);
 		glfwGetWindowSize(window, &width, &height);
 		glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
@@ -370,9 +369,10 @@ int main( void )
 		holoShader.setVec4("m_MainColor", glm::vec4(0.5f,0.5f,1.f,1.f));
 
 		glm::mat4 t = glm::mat4();
-		t = glm::translate(t, glm::vec3(-1.f,-1.f,0.f));
-		t = glm::scale(t, glm::vec3(0.01f, 0.01f, 0.01f));
-		Utilities::renderFalcon(holoShader, falcon, t);
+		t = glm::translate(t, glm::vec3(-8.f,-4.f,0.f));
+		t = glm::rotate(t, (float)glfwGetTime(), glm::vec3(0.f,1.f,0.f));
+		t = glm::scale(t, glm::vec3(1.f, 1.f, 1.f));
+		Utilities::renderFalcon(holoShader, vader, t);
 
 
 		// sky render
@@ -380,6 +380,7 @@ int main( void )
 		sky.Draw(skyShader);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 
 		if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
 			bloom = !bloom;
@@ -391,6 +392,8 @@ int main( void )
 		for (unsigned int i = 0; i < 6; i++)
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);
 			blurShader.setInt("horizontal", horizontal);
 			glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongColorbuffers[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
 			renderQuad();
