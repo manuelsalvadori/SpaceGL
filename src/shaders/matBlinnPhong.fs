@@ -108,14 +108,20 @@ void main()
 	//FragColor = vec4(ambient + diffuse + specular, 1.0); // no shadows 
 
 	// calculate shadow
-	float shadow = ShadowCalculation(FragPosLightSpace);                    
-	vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) + emission;  
-
+	float shadow = ShadowCalculation(FragPosLightSpace);
+	
+	vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular));// + emission;
 	// bloom
 	if(dot(emission, vec3(0.299, 0.587, 0.114)) > 0.2)
-		BrightColor = vec4(lighting * (vec3(1.f,1.f,1.5f)*((sin(time*10.f)+1.f)/3.f)+1.f), 1.0);
+	{
+		lighting += emission;
+		BrightColor = vec4(lighting * (vec3(1.f,1.2f,1.5f)*1.66f), 0.9); //((sin(time*10.f)+1.f)/3.f)+1.f)
+		lighting -= emission;
+		lighting += vec3(0.7,1.0,1.0);
+	}
 	else
 		BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 
+	
 	FragColor = vec4(lighting, 1.0);
 }

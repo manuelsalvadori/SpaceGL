@@ -48,6 +48,7 @@ int main( void )
 	Shader blurShader = Shader("src/shaders/blur.vs","src/shaders/blur.fs");
 	Shader bloomShader = Shader("src/shaders/bloom.vs","src/shaders/bloom.fs");
 	Shader holoShader = Shader("src/shaders/holoShader.vs","src/shaders/holoShader.fs");
+	Shader laserShader = Shader("src/shaders/matSky.vs","src/shaders/laser.fs");
 	//Shader debugDepthQuad = Shader("src/shaders/debug.vs","src/shaders/debug.fs");
 	GLuint simpleShaderID = simpleShader.getID();
 
@@ -67,6 +68,8 @@ int main( void )
 	Model sky("src/skybox/sky.obj");
 	glm::mat4 sky_transform = glm::mat4();
 	Model vader("src/falcon/vader.obj");
+	Model laser("src/falcon/laser.obj");
+	glm::mat4 laser_transform;
 
 	float deltaY = -4.0f;
 	float deltaX = 0.0f;
@@ -77,6 +80,7 @@ int main( void )
 
 	float deltaTime = 0.0f, lastFrame = 0.0f;
 	float shininess = 300.0f;
+	float test = 1.f;
 
 	bool bloom = true;
 
@@ -351,33 +355,53 @@ int main( void )
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		Utilities::renderLand(landShader, land, land_transform);
 
+		// sky render
+		skyShader.use();
+		sky.Draw(skyShader);
 
+		// laser render
+		laserShader.use();
+		laserShader.setMat4("view", view_matrix);
+		laserShader.setMat4("projection", projection_matrix);
+		laser_transform = glm::mat4();
+		laser_transform = glm::translate(laser_transform, vec3(deltaX, deltaY, -2.f));
+		laser_transform = glm::scale(laser_transform, glm::vec3(0.15,0.15,0.25));
+		laserShader.setMat4("model", laser_transform);
+		laser.Draw(laserShader);
+
+		// hologram render
+
+		if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
+		{
+			test += 0.1f;
+		}
+		if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+		{
+			test -= 0.1f;
+		}
+		cout << "test: "<< test << endl;
 		holoShader.use();
 		holoShader.setFloat("g_Time", (float)glfwGetTime());
 		holoShader.setMat4("view", view_matrix);
 		holoShader.setMat4("projection", projection_matrix);
 		holoShader.setFloat("m_GlitchSpeed", 1.0f);
 		holoShader.setFloat("m_GlitchIntensity", 1.0f);
-		holoShader.setFloat("m_BarSpeed", 1.0f);
-		holoShader.setFloat("m_BarDistance", 1.0f);
-		holoShader.setFloat("m_Alpha", 1.0f);
+		holoShader.setFloat("m_BarSpeed", 0.5f);
+		holoShader.setFloat("m_BarDistance", 10.f);
+		holoShader.setFloat("m_Alpha", 0.8f);
 		holoShader.setFloat("m_FlickerSpeed", 1.0f);
 		holoShader.setFloat("m_RimPower", 1.0f);
 		holoShader.setFloat("m_GlowSpeed", 1.0f);
-		holoShader.setFloat("m_GlowDistance", 1.0f);
-		holoShader.setVec4("m_RimColor", glm::vec4(1.f,1.f,1.f,1.f));
-		holoShader.setVec4("m_MainColor", glm::vec4(0.5f,0.5f,1.f,1.f));
+		holoShader.setFloat("m_GlowDistance", 0.3f);
+		holoShader.setVec4("m_RimColor", glm::vec4(0.6f,0.8f,1.f,1.f));
+		holoShader.setVec4("m_MainColor", glm::vec4(0.3f,0.5f,1.f,1.f));
 
 		glm::mat4 t = glm::mat4();
-		t = glm::translate(t, glm::vec3(-8.f,-4.f,0.f));
+		t = glm::translate(t, glm::vec3(-8.f,-3.f,0.f));
 		t = glm::rotate(t, (float)glfwGetTime(), glm::vec3(0.f,1.f,0.f));
-		t = glm::scale(t, glm::vec3(1.f, 1.f, 1.f));
+		t = glm::scale(t, glm::vec3(2.f, 2.f, 2.f));
+		glClear(GL_DEPTH_BUFFER_BIT);
 		Utilities::renderFalcon(holoShader, vader, t);
-
-
-		// sky render
-		skyShader.use();
-		sky.Draw(skyShader);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -413,6 +437,8 @@ int main( void )
 		glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal]);
 		bloomShader.setFloat("exposure", 1.0f);
 		bloomShader.setBool("bloom", bloom);
+		bloomShader.setFloat("width", width);
+		bloomShader.setFloat("height", height);
 		renderQuad();
 
 		// render Depth map to quad for visual debugging

@@ -67,5 +67,6 @@ void main(){
 	vec4 color = /*texColor **/ m_MainColor + rimColor + (glow * 0.35 * m_MainColor);
 	color.a = /*texColor.a **/ alpha * (bars + rim + glow) * flicker;
 	FragColor = color;
-	BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+	BrightColor = vec4(color.xyz*0.3, 1.0);
+	//BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 }
