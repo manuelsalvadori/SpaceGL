@@ -5,6 +5,7 @@
 #include "src/Utilities.h"
 #include "src/Shader.h"
 #include "src/Model.h"
+#include "src/Asteroid.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -21,7 +22,6 @@ void renderQuad();
 
 int main( void )
 {
-
 	Utilities::GLWF_init();
 	window = Utilities::createWindow();
 	glfwMakeContextCurrent(window);
@@ -71,6 +71,7 @@ int main( void )
 	Model laser("src/falcon/laser.obj");
 	glm::mat4 laser_transform;
 
+	srand (static_cast <unsigned> (glfwGetTime()));
 	float deltaY = -4.0f;
 	float deltaX = 0.0f;
 	float rotY = 3.14159f;
@@ -80,7 +81,6 @@ int main( void )
 
 	float deltaTime = 0.0f, lastFrame = 0.0f;
 	float shininess = 300.0f;
-	float test = 1.f;
 
 	bool bloom = true;
 
@@ -160,6 +160,26 @@ int main( void )
 			std::cout << "Framebuffer not complete!" << std::endl;
 	}
 
+	glm::mat4 lightProjection, lightView;
+	glm::mat4 lightSpaceMatrix;
+	float near_plane = 50.0f, far_plane = 275.0f;
+	lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+	lightView = glm::lookAt(lightPos, glm::vec3(0.0f,0.0f,0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	lightSpaceMatrix = lightProjection * lightView;
+
+	// light properties
+	glm::vec3 lightColor;
+	lightColor.x = 1.0f;
+	lightColor.y = 1.0f;
+	lightColor.z = 0.95f;
+	glm::vec3 diffuseColor = lightColor   * glm::vec3(0.8f); // decrease the influence
+	glm::vec3 ambientColor = diffuseColor * glm::vec3(0.4f); // low influence
+
+	// asteroids generation
+	Asteroid asteroids[5];
+	for(int i = 0; i < 5; i++)
+		asteroids[i] = Asteroid(lightPos, camPos, view_matrix, projection_matrix, lightSpaceMatrix, ambientColor, diffuseColor, depthMap);
+
 	// shader configuration
 	// --------------------
 	skyShader.use();
@@ -191,7 +211,7 @@ int main( void )
 		//cout << 1.f/deltaTime << endl;
 
 		// transformation matrices
-		ast_transform = glm::mat4();
+
 		if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
 		{
 			z ++;
@@ -201,8 +221,10 @@ int main( void )
 			z --;
 		}
 		//std::cout << z << endl;
+		ast_transform = glm::mat4();
 		Utilities::asteroidsTransform(ast_transform, glm::vec3(0.f, 0.f,z), (float)glfwGetTime(), (float)glfwGetTime()*0.5f, (float)glfwGetTime()*0.2f, glm::vec3(1.f,0.6f,1.f));
-		//Utilities::asteroidsTransform(ast_transform, glm::vec3(0.f, 0.f,z), 0.f,0.f,0.f);
+		for(int i = 0; i < 5; i++)
+			asteroids[i].updateTransform();
 
 		// falcon movement
 		Utilities::movementHandler(window, deltaTime, rotSpeed, deltaX, deltaY, rotX, rotZ);
@@ -230,13 +252,6 @@ int main( void )
 
 		// 1. render depth of scene to texture (from light's perspective)
 		// --------------------------------------------------------------
-		glm::mat4 lightProjection, lightView;
-		glm::mat4 lightSpaceMatrix;
-		float near_plane = 50.0f, far_plane = 275.0f;
-		//lightProjection = glm::perspective(glm::radians(45.0f), (GLfloat)SHADOW_WIDTH / (GLfloat)SHADOW_HEIGHT, near_plane, far_plane); // note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene
-		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-		lightView = glm::lookAt(lightPos, glm::vec3(0.0f,0.0f,0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		lightSpaceMatrix = lightProjection * lightView;
 		// render scene from light's point of view
 		shadowShader.use();
 		shadowShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
@@ -247,6 +262,9 @@ int main( void )
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		Utilities::renderScene(shadowShader, falcon, falcon_transform, asteroid, ast_transform);
+//		for(int i = 0; i < 5; i++)
+//			asteroids[i].DrawShadows(asteroid);
+
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		// reset viewport
@@ -275,13 +293,6 @@ int main( void )
 
 		simpleShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
-		// light properties
-		glm::vec3 lightColor;
-		lightColor.x = 1.0f;
-		lightColor.y = 1.0f;
-		lightColor.z = 0.95f;
-		glm::vec3 diffuseColor = lightColor   * glm::vec3(0.8f); // decrease the influence
-		glm::vec3 ambientColor = diffuseColor * glm::vec3(0.4f); // low influence
 		simpleShader.setVec3("light.ambient", ambientColor);
 		simpleShader.setVec3("light.diffuse", diffuseColor);
 		simpleShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
@@ -300,32 +311,6 @@ int main( void )
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		Utilities::renderFalcon(simpleShader, falcon, falcon_transform);
 
-		// render asteroids
-		asteroidShader.use();
-		asteroidShader.setVec3("light.position", lightPos);
-		asteroidShader.setVec3("lightPos", lightPos);
-		asteroidShader.setVec3("viewPos", camPos);
-		asteroidShader.setMat4("view", view_matrix);
-		asteroidShader.setMat4("projection", projection_matrix);
-		asteroidShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
-
-		asteroidShader.setVec3("light.ambient", ambientColor);
-		asteroidShader.setVec3("light.diffuse", diffuseColor);
-		asteroidShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-
-		// material properties
-		//		simpleShader.setVec3("material.ambient", 0.5f, 0.5f, 0.5f);
-		//		simpleShader.setVec3("material.diffuse", 1.0f, 1.0f, 1.0f);
-		//		simpleShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
-		asteroidShader.setVec3("material.ambient", 0.3f, 0.3f, 0.3f);
-		asteroidShader.setVec3("material.diffuse", 0.84f, 0.84f, 0.84f);
-		asteroidShader.setVec3("material.specular", 0.3f, 0.3f, 0.3f);
-		asteroidShader.setFloat("material.shininess", 22.0f);
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, depthMap);
-
-		Utilities::renderAsteroids(asteroidShader, asteroid, ast_transform);
 
 		// render land
 		landShader.use();
@@ -369,17 +354,37 @@ int main( void )
 		laserShader.setMat4("model", laser_transform);
 		laser.Draw(laserShader);
 
+		// render asteroids
+		asteroidShader.use();
+		asteroidShader.setVec3("light.position", lightPos);
+		asteroidShader.setVec3("lightPos", lightPos);
+		asteroidShader.setVec3("viewPos", camPos);
+		asteroidShader.setMat4("view", view_matrix);
+		asteroidShader.setMat4("projection", projection_matrix);
+		asteroidShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+		asteroidShader.setVec3("light.ambient", ambientColor);
+		asteroidShader.setVec3("light.diffuse", diffuseColor);
+		asteroidShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+
+		// material properties
+
+		asteroidShader.setVec3("material.ambient", 0.3f, 0.3f, 0.3f);
+		asteroidShader.setVec3("material.diffuse", 0.84f, 0.84f, 0.84f);
+		asteroidShader.setVec3("material.specular", 0.3f, 0.3f, 0.3f);
+		asteroidShader.setFloat("material.shininess", 22.0f);
+		asteroidShader.setFloat("alpha", 1.0f);
+		//cout << z << endl;
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthMap);
+
+		Utilities::renderAsteroids(asteroidShader, asteroid, ast_transform);
+		for(int i = 0; i < 5; i++)
+			asteroids[i].Draw(asteroid);
+
+		cout << "alpha: " << asteroids[0].alpha << " x: "<< asteroids[0].position.x << " y: "<< asteroids[0].position.y << " z: "<< asteroids[0].position.z << endl;
 		// hologram render
 
-		if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
-		{
-			test += 0.1f;
-		}
-		if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
-		{
-			test -= 0.1f;
-		}
-		cout << "test: "<< test << endl;
 		holoShader.use();
 		holoShader.setFloat("g_Time", (float)glfwGetTime());
 		holoShader.setMat4("view", view_matrix);

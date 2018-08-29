@@ -11,6 +11,7 @@
 class Shader
 {
 public:
+	Shader();
 	Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
 	GLuint getID();
 

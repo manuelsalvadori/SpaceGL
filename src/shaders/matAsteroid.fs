@@ -28,6 +28,7 @@ in vec3 TangentViewPos;
 in vec3 TangentFragPos;
 in float noise;
 
+uniform float alpha;
 uniform vec3 viewPos;
 uniform Material material;
 uniform Light light;
@@ -107,8 +108,10 @@ void main()
 
 	// calculate shadow
 	float shadow = ShadowCalculation(FragPosLightSpace);                    
-	vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular));
+	//vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular));
+	vec3 lighting = (ambient + diffuse + specular); // no shadows 
+	//vec3 lighting = texture(texture_diffuse1, TexCoords).rgb;
 
-	FragColor = vec4(lighting, 1.0);
+	FragColor = vec4(lighting, alpha);
 	BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 }

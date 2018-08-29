@@ -76,6 +76,8 @@ GLuint Shader::getID()
 	return ID;
 }
 
+Shader::Shader(){};
+
 Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath)
 {
     // 1. retrieve the vertex/fragment source code from filePath

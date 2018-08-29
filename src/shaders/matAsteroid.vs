@@ -148,6 +148,7 @@ void main()
 	float c = 3.0 * pnoise(0.15 * aPos, vec3(90.0));
 	float displacement = noise * 1.8f + max((b+c)*0.8f, 1.0f);
 	vec3 newPos = aPos + (aNormal * max(displacement,0.f));
+	
 	FragPos = vec3(model * vec4(newPos, 1.0));
 	
 	// normal mapping
