@@ -55,13 +55,13 @@ void main()
 	vec3 hdrColor = Fxaa(scene, vec2(width, height));
 	vec3 bloomColor = texture(bloomBlur, TexCoords).rgb;
 
-	// tone mapping
-	//bloomColor = vec3(1.0) - exp(-bloomColor * exposure);
-	// also gamma correct while we're at it       
-	//bloomColor = pow(bloomColor, vec3(1.0 / gamma));
-
 	if(bloom)
 		hdrColor += bloomColor; // additive blending
+	
+	// tone mapping
+	//hdrColor = vec3(1.0) - exp(-hdrColor * exposure);
+	// also gamma correct while we're at it       
+	//hdrColor = pow(hdrColor, vec3(1.0 / gamma));
 
 	FragColor = vec4(hdrColor, 1.0);
 }

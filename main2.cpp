@@ -15,6 +15,8 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 
+#define AST_N 4
+
 using namespace glm;
 
 GLFWwindow* window;
@@ -42,7 +44,6 @@ int main( void )
 
 	Shader simpleShader = Shader("src/shaders/matBlinnPhong.vs", "src/shaders/matBlinnPhong.fs");
 	Shader landShader = Shader("src/shaders/matLand.vs","src/shaders/matLand.fs");
-	Shader asteroidShader = Shader("src/shaders/matAsteroid.vs","src/shaders/matAsteroid.fs");
 	Shader shadowShader = Shader("src/shaders/shadowMap.vs","src/shaders/shadowMap.fs");
 	Shader skyShader = Shader("src/shaders/matSky.vs","src/shaders/matSky.fs");
 	Shader blurShader = Shader("src/shaders/blur.vs","src/shaders/blur.fs");
@@ -50,12 +51,11 @@ int main( void )
 	Shader holoShader = Shader("src/shaders/holoShader.vs","src/shaders/holoShader.fs");
 	Shader laserShader = Shader("src/shaders/matSky.vs","src/shaders/laser.fs");
 	//Shader debugDepthQuad = Shader("src/shaders/debug.vs","src/shaders/debug.fs");
-	GLuint simpleShaderID = simpleShader.getID();
 
 	glm::vec3 lightPos = glm::vec3(46,77,86);
 	glm::vec3 camPos = glm::vec3(0,1,15);
 
-	glm::mat4 projection_matrix = glm::perspective(glm::radians(45.0f), 16.0f/9.0f, 0.1f, 100.0f); // Projection matrix : Field of View, screen ratio, display range : near <-> far planes
+	glm::mat4 projection_matrix = glm::perspective(glm::radians(45.0f), (float)width/(float)height, 0.1f, 215.0f); // Projection matrix : Field of View, screen ratio, display range : near <-> far planes
 	glm::mat4 view_matrix = glm::lookAt(camPos, glm::vec3(0,0,0), glm::vec3(0,1,0));
 	glm::mat3 normalMat;
 
@@ -108,10 +108,10 @@ int main( void )
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// configure (floating point) framebuffers
-	// ---------------------------------------
 	unsigned int hdrFBO;
 	glGenFramebuffers(1, &hdrFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+
 	// create 2 floating point color buffers (1 for normal rendering, other for brightness treshold values)
 	unsigned int colorBuffers[2];
 	glGenTextures(2, colorBuffers);
@@ -126,16 +126,18 @@ int main( void )
 		// attach texture to framebuffer
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0);
 	}
+
 	// create and attach depth buffer (renderbuffer)
 	unsigned int rboDepth;
 	glGenRenderbuffers(1, &rboDepth);
 	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+
 	// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
 	unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glDrawBuffers(2, attachments);
-	// finally check if framebuffer is complete
+
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete!" << std::endl;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -176,12 +178,15 @@ int main( void )
 	glm::vec3 ambientColor = diffuseColor * glm::vec3(0.4f); // low influence
 
 	// asteroids generation
-	Asteroid asteroids[5];
-	for(int i = 0; i < 5; i++)
+	Asteroid asteroids[AST_N];
+	for(int i = 0; i < AST_N; i++)
 		asteroids[i] = Asteroid(lightPos, camPos, view_matrix, projection_matrix, lightSpaceMatrix, ambientColor, diffuseColor, depthMap);
 
 	// shader configuration
 	// --------------------
+	holoShader.use();
+	holoShader.setMat4("view", view_matrix);
+	holoShader.setMat4("projection", projection_matrix);
 	skyShader.use();
 	sky_transform = glm::mat4();
 	sky_transform = glm::scale(sky_transform, glm::vec3(20.5f, 20.5f, 1.f));
@@ -201,29 +206,16 @@ int main( void )
 	//	debugDepthQuad.setInt("depthMap", 0);
 
 	// game loop -----------------------------------------------------------------------------------------------------------
-
-	float z = 0.f;
 	while(glfwWindowShouldClose(window) == 0)
 	{
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		//cout << 1.f/deltaTime << endl;
 
 		// transformation matrices
 
-		if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
-		{
-			z ++;
-		}
-		if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
-		{
-			z --;
-		}
-		//std::cout << z << endl;
-		ast_transform = glm::mat4();
-		Utilities::asteroidsTransform(ast_transform, glm::vec3(0.f, 0.f,z), (float)glfwGetTime(), (float)glfwGetTime()*0.5f, (float)glfwGetTime()*0.2f, glm::vec3(1.f,0.6f,1.f));
-		for(int i = 0; i < 5; i++)
+		// asteroids movement
+		for(int i = 0; i < AST_N; i++)
 			asteroids[i].updateTransform();
 
 		// falcon movement
@@ -231,11 +223,7 @@ int main( void )
 
 		// falcon
 		falcon_transform = glm::mat4();
-		falcon_transform = glm::translate(falcon_transform, glm::vec3(deltaX, deltaY, 0.0f));
-		falcon_transform = glm::rotate(falcon_transform, rotX, glm::vec3(1.0f, 0.0f, 0.0f));
-		falcon_transform = glm::rotate(falcon_transform, rotY, glm::vec3(0.0f, 1.0f, 0.0f));
-		falcon_transform = glm::rotate(falcon_transform, rotZ, glm::vec3(0.0f, 0.0f, 1.0f));
-		falcon_transform = glm::scale(falcon_transform, glm::vec3(0.01f, 0.01f, 0.01f));
+		Utilities::updateFalcon(falcon_transform, deltaX, deltaY, rotX, rotY, rotZ);
 
 		// land
 		land_transform = glm::mat4();
@@ -243,16 +231,10 @@ int main( void )
 		land_transform = glm::rotate(land_transform, 0.1f, glm::vec3(1.0f, 0.f, 0.0f));
 		land_transform = glm::scale(land_transform, glm::vec3(40.0f, 10.0f, 40.0f));
 
-		Utilities::moveLight(window, lightPos);
-
-		// depth texture
-
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// 1. render depth of scene to texture (from light's perspective)
-		// --------------------------------------------------------------
-		// render scene from light's point of view
+		// 1 - render depth of scene to texture (from light's perspective)
 		shadowShader.use();
 		shadowShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
@@ -270,8 +252,7 @@ int main( void )
 		// reset viewport
 		glViewport(0, 0, width, height);
 
-		// 2. render scene as normal using the generated depth/shadow map
-		// regular rendering -------------------------------------------------------------------------------------------
+		// 2 - render scene as normal using the generated depth/shadow map
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);
 		glfwGetWindowSize(window, &width, &height);
@@ -279,10 +260,14 @@ int main( void )
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// shader setting
-		projection_matrix = glm::perspective(glm::radians(45.0f), (float)width/(float)height, 0.1f, 180.0f);
 		skyShader.use();
 		skyShader.setMat4("view", view_matrix);
 		skyShader.setMat4("projection", projection_matrix);
+
+		// sky render
+		skyShader.use();
+		sky.Draw(skyShader);
+		glClear(GL_DEPTH_BUFFER_BIT);
 
 		simpleShader.use();
 		simpleShader.setVec3("light.position", lightPos);
@@ -340,10 +325,6 @@ int main( void )
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		Utilities::renderLand(landShader, land, land_transform);
 
-		// sky render
-		skyShader.use();
-		sky.Draw(skyShader);
-
 		// laser render
 		laserShader.use();
 		laserShader.setMat4("view", view_matrix);
@@ -355,67 +336,18 @@ int main( void )
 		laser.Draw(laserShader);
 
 		// render asteroids
-		asteroidShader.use();
-		asteroidShader.setVec3("light.position", lightPos);
-		asteroidShader.setVec3("lightPos", lightPos);
-		asteroidShader.setVec3("viewPos", camPos);
-		asteroidShader.setMat4("view", view_matrix);
-		asteroidShader.setMat4("projection", projection_matrix);
-		asteroidShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
-
-		asteroidShader.setVec3("light.ambient", ambientColor);
-		asteroidShader.setVec3("light.diffuse", diffuseColor);
-		asteroidShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-
-		// material properties
-
-		asteroidShader.setVec3("material.ambient", 0.3f, 0.3f, 0.3f);
-		asteroidShader.setVec3("material.diffuse", 0.84f, 0.84f, 0.84f);
-		asteroidShader.setVec3("material.specular", 0.3f, 0.3f, 0.3f);
-		asteroidShader.setFloat("material.shininess", 22.0f);
-		asteroidShader.setFloat("alpha", 1.0f);
-		//cout << z << endl;
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, depthMap);
-
-		Utilities::renderAsteroids(asteroidShader, asteroid, ast_transform);
-		for(int i = 0; i < 5; i++)
+		for(int i = 0; i < AST_N; i++)
 			asteroids[i].Draw(asteroid);
 
-		cout << "alpha: " << asteroids[0].alpha << " x: "<< asteroids[0].position.x << " y: "<< asteroids[0].position.y << " z: "<< asteroids[0].position.z << endl;
 		// hologram render
-
-		holoShader.use();
-		holoShader.setFloat("g_Time", (float)glfwGetTime());
-		holoShader.setMat4("view", view_matrix);
-		holoShader.setMat4("projection", projection_matrix);
-		holoShader.setFloat("m_GlitchSpeed", 1.0f);
-		holoShader.setFloat("m_GlitchIntensity", 1.0f);
-		holoShader.setFloat("m_BarSpeed", 0.5f);
-		holoShader.setFloat("m_BarDistance", 10.f);
-		holoShader.setFloat("m_Alpha", 0.8f);
-		holoShader.setFloat("m_FlickerSpeed", 1.0f);
-		holoShader.setFloat("m_RimPower", 1.0f);
-		holoShader.setFloat("m_GlowSpeed", 1.0f);
-		holoShader.setFloat("m_GlowDistance", 0.3f);
-		holoShader.setVec4("m_RimColor", glm::vec4(0.6f,0.8f,1.f,1.f));
-		holoShader.setVec4("m_MainColor", glm::vec4(0.3f,0.5f,1.f,1.f));
-
-		glm::mat4 t = glm::mat4();
-		t = glm::translate(t, glm::vec3(-8.f,-3.f,0.f));
-		t = glm::rotate(t, (float)glfwGetTime(), glm::vec3(0.f,1.f,0.f));
-		t = glm::scale(t, glm::vec3(2.f, 2.f, 2.f));
-		glClear(GL_DEPTH_BUFFER_BIT);
-		Utilities::renderFalcon(holoShader, vader, t);
+		Utilities::renderHologram(holoShader, vader);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 
 		if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
 			bloom = !bloom;
 
-		// 2. blur bright fragments with two-pass Gaussian Blur
-		// --------------------------------------------------
+		// 2 - blur bright fragments with two-pass Gaussian Blur
 		bool horizontal = true, first_iteration = true;
 		blurShader.use();
 		for (unsigned int i = 0; i < 6; i++)
@@ -432,8 +364,7 @@ int main( void )
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		// 3. now render floating point color buffer to 2D quad and tonemap HDR colors to default framebuffer's (clamped) color range
-		// --------------------------------------------------------------------------------------------------------------------------
+		// 3 - render color + bloom with FXAA
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		bloomShader.use();
 		glActiveTexture(GL_TEXTURE0);
@@ -458,15 +389,19 @@ int main( void )
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-
 	}
 
 	// Cleanup VBO and shader
-	glDeleteProgram(simpleShaderID);
+	glDeleteProgram(simpleShader.getID());
+	glDeleteProgram(landShader.getID());
+	glDeleteProgram(shadowShader.getID());
+	glDeleteProgram(skyShader.getID());
+	glDeleteProgram(blurShader.getID());
+	glDeleteProgram(bloomShader.getID());
+	glDeleteProgram(holoShader.getID());
+	glDeleteProgram(laserShader.getID());
 
-	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
-
 	return 0;
 }
 

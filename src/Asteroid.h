@@ -27,10 +27,14 @@ public:
 	float rotY;
 	float rotZ;
 	float alpha;
+	float scaleK;
 	unsigned int depthMap;
 
 	void Draw(Model&);
 	void updateTransform();
+
+private:
+	static int count;
 
 };
 

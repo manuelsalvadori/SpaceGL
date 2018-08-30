@@ -76,7 +76,7 @@ GLuint Shader::getID()
 	return ID;
 }
 
-Shader::Shader(){};
+Shader::Shader(): ID(){};
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath)
 {

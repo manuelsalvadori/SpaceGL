@@ -1,7 +1,7 @@
 
 #include "Asteroid.h"
 
-Asteroid::Asteroid(){}
+Asteroid::Asteroid(): rotX(), rotY(), rotZ(), alpha(), scaleK(), depthMap(){}
 Asteroid::Asteroid(const glm::vec3 &lightPos, const glm::vec3 &camPos, const glm::mat4 &view_matrix,
 		const glm::mat4 &projection_matrix, const glm::mat4 &lightSpaceMatrix, const glm::vec3 &ambientColor,
 		const glm::vec3 &diffuseColor, unsigned int depthMap): alpha(0.0f), depthMap(depthMap)
@@ -17,7 +17,6 @@ Asteroid::Asteroid(const glm::vec3 &lightPos, const glm::vec3 &camPos, const glm
 
 	shader.setVec3("light.ambient", ambientColor);
 	shader.setVec3("light.diffuse", diffuseColor);
-	cout << "r:" << diffuseColor.x << " g:" << diffuseColor.y << " b:" << diffuseColor.z << endl;
 	shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
 	// material properties
@@ -27,33 +26,52 @@ Asteroid::Asteroid(const glm::vec3 &lightPos, const glm::vec3 &camPos, const glm
 	shader.setFloat("material.shininess", 22.0f);
 	shader.setFloat("alpha", 0.0f);
 
-	rotX = 0.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f-0.0f)));
-	rotY = 0.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f-0.0f)));
-	rotZ = 0.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f-0.0f)));
+	rotX = 0.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
+	rotY = 0.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
+	rotZ = 0.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
 
-	scale = glm::vec3(1.f);
+	scaleK = 0.8f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.7f)));
+
+	scale = glm::vec3();
+	scale.y = 0.25f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.5f)));
+	scale.x = 0.25f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.5f)));
+	scale.z = 0.25f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.5f)));
+	scale *= scaleK;
 	transform = glm::mat4();
 	position = glm::vec3();
-	position.y = -3.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(6.0f)));
-	position.x = -4.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(8.0f)));
-	position.z = -160.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(20.0f)));
+	position.y = -5.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(11.0f)));
+	position.x = -7.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(15.0f)));
+	position.z = -141.f - count * 30.0f;
+	count ++;
 }
 
-Asteroid::~Asteroid() {}
+Asteroid::~Asteroid(){}
 
 void Asteroid::updateTransform()
 {
-	position.z += 2.0f;
-	if(position.z > 10)
+	position.z += 2.5f;
+	if(position.z > 5)
 	{
+		scaleK = 0.9f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.9f)));
 		alpha = 0.0f;
-		position.z = -140.0f;
-		position.y = -3.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(6.0f)));
-		position.x = -4.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(8.0f)));
+		position.z = -160.0f;
+		position.y = -4.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(10.0f)));
+		position.x = -7.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(15.0f)));
+		scale.y = 0.25f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.5f)));
+		scale.x = 0.25f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.5f)));
+		scale.z = 0.25f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.5f)));
+		scale *= scaleK;
 	}
-	if(alpha < 1.0)
-		alpha += 0.1f;
 
+	if(alpha < 1.0)
+	{
+		if(position.z > -140)
+			alpha += 0.04;
+		else
+			alpha += 0.01f;
+	}
+
+	cout << "alpha: " << alpha  << " @ " << position.z << endl;
 	transform = glm::mat4();
 	transform = glm::translate(transform, position);
 	transform = glm::rotate(transform, (float)glfwGetTime()*rotX, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -72,4 +90,6 @@ void Asteroid::Draw(Model &model)
 	glBindTexture(GL_TEXTURE_2D, depthMap);
 	model.Draw(shader);
 }
+
+int Asteroid::count = 0;
 
