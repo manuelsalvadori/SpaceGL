@@ -29,13 +29,13 @@ in vec3 TangentFragPos;
 in float noise;
 
 uniform float alpha;
+uniform float r;
 uniform vec3 viewPos;
 uniform Material material;
 uniform Light light;
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_normal1;
 uniform sampler2D shadowMap;
-uniform bool falcon;
 
 float when_gt(float x, float y)
 {
@@ -83,7 +83,10 @@ void main()
 	// transform normal vector to range [-1,1]
 	normal = normalize(normal * 2.0 - 1.0);  // this normal is in tangent space
 
-	vec3 color = (texture(texture_diffuse1, TexCoords).rgb + vec3(0.2f)) * (3.0 * noise);
+	// random color desaturation
+	vec3 color = texture(texture_diffuse1, TexCoords).rgb;
+	vec3 desaturated_color = vec3(0.3 * color.r + 0.59 * color.g + 0.11 * color.b);
+	color = (color * (1.0f-r) + r * desaturated_color) * (4 * noise);
 
 	// ambient
 	vec3 ambient = 0.5 * color * light.ambient * material.ambient;
@@ -107,11 +110,10 @@ void main()
 	//FragColor = vec4(ambient + diffuse + specular, 1.0); // no shadows 
 
 	// calculate shadow
-	float shadow = ShadowCalculation(FragPosLightSpace);                    
+	//float shadow = ShadowCalculation(FragPosLightSpace);                    
 	//vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular));
-	vec3 lighting = (ambient + diffuse + specular); // no shadows 
-	//vec3 lighting = texture(texture_diffuse1, TexCoords).rgb;
+	vec3 lighting = (ambient + diffuse + specular); // no shadows
 
-	FragColor = vec4(lighting, alpha);
+	FragColor = vec4(lighting*alpha, alpha);
 	BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 }

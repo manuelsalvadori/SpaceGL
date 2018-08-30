@@ -104,12 +104,6 @@ void Utilities::updateFalcon(glm::mat4 &falcon_transform, const float &deltaX, f
 	falcon_transform = glm::scale(falcon_transform, glm::vec3(0.01f, 0.01f, 0.01f));
 }
 
-void Utilities::renderScene(Shader shader, Model &falcon, glm::mat4 &falcon_transform, Model &asteroid, glm::mat4 &ast_transform)
-{
-	renderAsteroids(shader, asteroid, ast_transform);
-	renderFalcon(shader, falcon, falcon_transform);
-}
-
 void Utilities::renderFalcon(Shader shader, Model &falcon, glm::mat4 &falcon_transform)
 {
 	glm::mat4 normalMat = glm::inverseTranspose(glm::mat3(falcon_transform));
@@ -130,8 +124,8 @@ void Utilities::renderHologram(Shader &holoShader, Model &model)
 	holoShader.setFloat("m_FlickerSpeed", 1.5f);
 	holoShader.setFloat("m_RimPower", 1.0f);
 	holoShader.setFloat("m_GlowSpeed", 1.0f);
-	holoShader.setFloat("m_GlowDistance", 0.3f);
-	holoShader.setVec4("m_RimColor", glm::vec4(0.6f,0.8f,1.f,1.f));
+	holoShader.setFloat("m_GlowDistance", 0.2f);
+	holoShader.setVec4("m_RimColor", glm::vec4(0.5f,0.8f,1.f,1.f));
 	holoShader.setVec4("m_MainColor", glm::vec4(0.3f,0.5f,1.f,1.f));
 
 	glm::mat4 t = glm::mat4();
@@ -188,4 +182,25 @@ void Utilities::moveLight(GLFWwindow *window, glm::vec3 &lightPos)
 	{
 		lightPos.x --;
 	}
+}
+
+void Utilities::renderScore(Shader &holoShader, Model &tens, Model &units)
+{
+	holoShader.use();
+
+	glm::mat4 t = glm::mat4();
+	t = glm::translate(t, glm::vec3(-9.0f,-1.5f,0.f));
+	t = glm::scale(t, glm::vec3(1.5f, 1.5f, 1.5f));
+	glm::mat4 normalMat = glm::inverseTranspose(glm::mat3(t));
+	holoShader.setMat4("model", t);
+	holoShader.setMat3("normalMat", normalMat);
+	tens.Draw(holoShader);
+
+	t = glm::mat4();
+	t = glm::translate(t, glm::vec3(-8.0f,-1.5f,0.f));
+	t = glm::scale(t, glm::vec3(1.5f, 1.5f, 1.5f));
+	normalMat = glm::inverseTranspose(glm::mat3(t));
+	holoShader.setMat4("model", t);
+	holoShader.setMat3("normalMat", normalMat);
+	units.Draw(holoShader);
 }

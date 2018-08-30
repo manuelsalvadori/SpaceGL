@@ -31,6 +31,7 @@ public:
     bool gammaCorrection;
 
     Model(string const &path, bool gamma=false);
+    Model();
     virtual ~Model();
     void Draw(Shader shader);
 

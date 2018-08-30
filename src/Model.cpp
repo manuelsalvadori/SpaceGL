@@ -5,6 +5,8 @@ Model::Model(string const &path, bool gamma): gammaCorrection(gamma)
 	loadModel(path);
 }
 
+Model::Model():gammaCorrection(){}
+
 Model::~Model()
 {
 	for(unsigned int i = 0; i < meshes.size(); i++)

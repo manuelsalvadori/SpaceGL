@@ -60,7 +60,6 @@ int main( void )
 	glm::mat3 normalMat;
 
 	Model asteroid("src/asteroid/icosphere2.obj");
-	glm::mat4 ast_transform;
 	Model falcon("src/falcon/Millennium_Falcon.obj");
 	glm::mat4 falcon_transform;
 	Model land("src/falcon/cube.obj");
@@ -68,6 +67,29 @@ int main( void )
 	Model sky("src/skybox/sky.obj");
 	glm::mat4 sky_transform = glm::mat4();
 	Model vader("src/falcon/vader.obj");
+
+	Model one("src/numbers/one.obj");
+	Model two("src/numbers/two.obj");
+	Model three("src/numbers/three.obj");
+	Model four("src/numbers/four.obj");
+	Model five("src/numbers/five.obj");
+	Model six("src/numbers/six.obj");
+	Model seven("src/numbers/seven.obj");
+	Model eight("src/numbers/eight.obj");
+	Model nine("src/numbers/nine.obj");
+	Model zero("src/numbers/zero.obj");
+	Model numbers[10];
+	numbers[0] = zero;
+	numbers[1] = one;
+	numbers[2] = two;
+	numbers[3] = three;
+	numbers[4] = four;
+	numbers[5] = five;
+	numbers[6] = six;
+	numbers[7] = seven;
+	numbers[8] = eight;
+	numbers[9] = nine;
+
 	Model laser("src/falcon/laser.obj");
 	glm::mat4 laser_transform;
 
@@ -78,6 +100,7 @@ int main( void )
 	float rotX = 0.0f;
 	float rotZ = 0.0f;
 	float rotSpeed = 1.0f;
+	int score = 0;
 
 	float deltaTime = 0.0f, lastFrame = 0.0f;
 	float shininess = 300.0f;
@@ -243,7 +266,7 @@ int main( void )
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
-		Utilities::renderScene(shadowShader, falcon, falcon_transform, asteroid, ast_transform);
+		Utilities::renderFalcon(shadowShader, falcon, falcon_transform);
 //		for(int i = 0; i < 5; i++)
 //			asteroids[i].DrawShadows(asteroid);
 
@@ -341,6 +364,10 @@ int main( void )
 
 		// hologram render
 		Utilities::renderHologram(holoShader, vader);
+		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+			score ++;
+
+		Utilities::renderScore(holoShader, numbers[(score/10) % 10], numbers[score % 10]);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

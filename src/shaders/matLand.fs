@@ -110,5 +110,8 @@ void main()
 	vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular));  
 
 	FragColor = vec4(lighting, 1.0);
-	BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+	if(FragPos.z < -34.5f)
+		BrightColor = vec4(lighting, 1.0);
+	else
+		BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 }

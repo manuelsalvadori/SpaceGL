@@ -26,6 +26,14 @@ Asteroid::Asteroid(const glm::vec3 &lightPos, const glm::vec3 &camPos, const glm
 	shader.setFloat("material.shininess", 22.0f);
 	shader.setFloat("alpha", 0.0f);
 
+	// displacement parameters
+	shader.setFloat("p1", 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f))));
+	shader.setFloat("p2", 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f))));
+	shader.setFloat("p3", 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f))));
+	shader.setFloat("p4", 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f))));
+	shader.setFloat("noiseK", 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f))));
+	shader.setFloat("r", 0.1f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.9f))));
+
 	rotX = 0.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
 	rotY = 0.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
 	rotZ = 0.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
@@ -41,7 +49,7 @@ Asteroid::Asteroid(const glm::vec3 &lightPos, const glm::vec3 &camPos, const glm
 	position = glm::vec3();
 	position.y = -5.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(11.0f)));
 	position.x = -7.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(15.0f)));
-	position.z = -141.f - count * 30.0f;
+	position.z = -141.f - count * 35.0f;
 	count ++;
 }
 
@@ -52,15 +60,24 @@ void Asteroid::updateTransform()
 	position.z += 2.5f;
 	if(position.z > 5)
 	{
-		scaleK = 0.9f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.9f)));
 		alpha = 0.0f;
 		position.z = -160.0f;
 		position.y = -4.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(10.0f)));
 		position.x = -7.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(15.0f)));
+
+		scaleK = 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.5f)));
 		scale.y = 0.25f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.5f)));
 		scale.x = 0.25f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.5f)));
 		scale.z = 0.25f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.5f)));
 		scale *= scaleK;
+
+		shader.use();
+		shader.setFloat("p1", 0.3f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.6f))));
+		shader.setFloat("p2", 0.3f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.6f))));
+		shader.setFloat("p3", 0.3f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.6f))));
+		shader.setFloat("p4", 0.3f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.6f))));
+		shader.setFloat("noiseK", 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f))));
+		shader.setFloat("r", 0.1f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.9f))));
 	}
 
 	if(alpha < 1.0)
@@ -71,7 +88,7 @@ void Asteroid::updateTransform()
 			alpha += 0.01f;
 	}
 
-	cout << "alpha: " << alpha  << " @ " << position.z << endl;
+	//cout << "alpha: " << alpha  << " @ " << position.z << endl;
 	transform = glm::mat4();
 	transform = glm::translate(transform, position);
 	transform = glm::rotate(transform, (float)glfwGetTime()*rotX, glm::vec3(1.0f, 0.0f, 0.0f));

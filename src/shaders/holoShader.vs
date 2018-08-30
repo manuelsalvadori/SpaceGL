@@ -32,8 +32,8 @@ void main()
 	viewDir = normalize(-(g_WorldViewMatrix * vec4(aPos, 1.0)).xyz);
 
 	vec3 outPosition = (g_WorldMatrix * vec4(aPos, 1.0)).xyz;
+	
 	//Glitch
-
 	outPosition.x += m_GlitchIntensity * step(0.5, sin(g_Time * 2.0 + aPos.y * 1.0)) * step(0.99, sin(g_Time * m_GlitchSpeed * 0.5));
 
 	gl_Position = g_ViewProjectionMatrix * vec4(outPosition, 1.0);

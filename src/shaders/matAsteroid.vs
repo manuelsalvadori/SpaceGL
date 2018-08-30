@@ -25,6 +25,56 @@ uniform mat4 lightSpaceMatrix;
 uniform vec3 lightPos;
 uniform vec3 viewPos;
 
+uniform float p1;
+uniform float p2;
+uniform float p3;
+uniform float p4;
+uniform float noiseK;
+
+vec3 mod289(vec3 x);
+vec4 mod289(vec4 x);
+vec4 permute(vec4 x);
+vec4 taylorInvSqrt(vec4 r);
+vec3 fade(vec3 t);
+float pnoise(vec3 P, vec3 rep);
+float turbulence(vec3 p);
+
+float when_gt(float x, float y)
+{
+	return max(sign(x - y), 0.0);
+}
+
+void main()
+{
+	TexCoords = aTexCoords;
+	Normal = normalMat * aNormal;
+
+	// displacement
+	noise = 10.0 * -0.10 * turbulence(0.5 * aNormal);
+	float b = 5.0 * p1 * pnoise(0.05 * p3 * aPos, vec3(100.0));
+	float c = 3.0 * p2* pnoise(0.15 * p4 * aPos, vec3(90.0));
+	float displacement = (noise * 1.8f * noiseK) + max((b+c)*0.8f, 1.0f);
+	//vec3 newPos = aPos + (aNormal * max(displacement,0.f));
+	vec3 newPos = aPos + (aNormal * abs(displacement));
+	
+	FragPos = vec3(model * vec4(newPos, 1.0));
+	
+	// normal mapping
+	vec3 T = normalize(normalMat * aTangent);
+	vec3 N = normalize(normalMat * aNormal);
+	T = normalize(T - dot(T, N) * N);
+	vec3 B = cross(N, T);
+	mat3 TBN = transpose(mat3(T, B, N));    
+	TangentLightPos = TBN * lightPos;
+	TangentViewPos  = TBN * viewPos;
+	TangentFragPos  = TBN * FragPos;
+
+	// shadow mapping
+	FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
+
+	gl_Position = projection * view * vec4(FragPos, 1.0);
+}
+
 vec3 mod289(vec3 x)
 {
 	return x - floor(x * (1.0 / 289.0)) * 289.0;
@@ -130,39 +180,4 @@ float turbulence(vec3 p)
 	}
 
 	return t;
-}
-
-float when_gt(float x, float y)
-{
-	return max(sign(x - y), 0.0);
-}
-
-void main()
-{
-	TexCoords = aTexCoords;
-	Normal = normalMat * aNormal;
-
-	// displacement
-	noise = 10.0 * -0.10 * turbulence(0.5 * aNormal);
-	float b = 5.0 * pnoise(0.05 * aPos, vec3(100.0));
-	float c = 3.0 * pnoise(0.15 * aPos, vec3(90.0));
-	float displacement = noise * 1.8f + max((b+c)*0.8f, 1.0f);
-	vec3 newPos = aPos + (aNormal * max(displacement,0.f));
-	
-	FragPos = vec3(model * vec4(newPos, 1.0));
-	
-	// normal mapping
-	vec3 T = normalize(normalMat * aTangent);
-	vec3 N = normalize(normalMat * aNormal);
-	T = normalize(T - dot(T, N) * N);
-	vec3 B = cross(N, T);
-	mat3 TBN = transpose(mat3(T, B, N));    
-	TangentLightPos = TBN * lightPos;
-	TangentViewPos  = TBN * viewPos;
-	TangentFragPos  = TBN * FragPos;
-
-	// shadow mapping
-	FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
-
-	gl_Position = projection * view * vec4(FragPos, 1.0);
 }

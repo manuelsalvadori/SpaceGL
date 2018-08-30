@@ -21,6 +21,8 @@ public:
 	static void asteroidsTransform(glm::mat4 &ast_transform, glm::vec3 traslate, float rotx, float roty, float rotz, glm::vec3 scale = glm::vec3(1.f));
 	static void moveLight(GLFWwindow *window, glm::vec3 &lightPos);
 	static void updateFalcon(glm::mat4 &falcon_transform, const float &deltaX, float &deltaY, float &rotX, float &rotY, float &rotZ);
+	static void renderScore(Shader &holoShader, Model &tens, Model &units);
+	static void loadNumbers(Model *numbers);
 
 };
 
