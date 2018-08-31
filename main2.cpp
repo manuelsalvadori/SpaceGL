@@ -6,6 +6,7 @@
 #include "src/Shader.h"
 #include "src/Model.h"
 #include "src/Asteroid.h"
+#include "src/laser.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -30,12 +31,12 @@ int main( void )
 	glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window,int h, int w){glfwGetWindowSize(window, &w, &h); glViewport(0, 0, w, h);}); //lambda
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 	int width = 1152, height = 648;
+	glfwGetWindowSize(window, &width, &height);
 
 	Utilities::GLEW_init();
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-	glEnable(GL_MULTISAMPLE); // anti-aliasing
 	glEnable(GL_CULL_FACE); // backface culling
 	glEnable(GL_DEPTH_TEST); // z-buffer
 	glDepthFunc(GL_LEQUAL); // z-buffer
@@ -68,29 +69,9 @@ int main( void )
 	glm::mat4 sky_transform = glm::mat4();
 	Model vader("src/falcon/vader.obj");
 
-	Model one("src/numbers/one.obj");
-	Model two("src/numbers/two.obj");
-	Model three("src/numbers/three.obj");
-	Model four("src/numbers/four.obj");
-	Model five("src/numbers/five.obj");
-	Model six("src/numbers/six.obj");
-	Model seven("src/numbers/seven.obj");
-	Model eight("src/numbers/eight.obj");
-	Model nine("src/numbers/nine.obj");
-	Model zero("src/numbers/zero.obj");
-	Model numbers[10];
-	numbers[0] = zero;
-	numbers[1] = one;
-	numbers[2] = two;
-	numbers[3] = three;
-	numbers[4] = four;
-	numbers[5] = five;
-	numbers[6] = six;
-	numbers[7] = seven;
-	numbers[8] = eight;
-	numbers[9] = nine;
+	vector<unique_ptr<Model>> numbers = Utilities::loadNumbers();
 
-	Model laser("src/falcon/laser.obj");
+	Model laserModel("src/falcon/laser.obj");
 	glm::mat4 laser_transform;
 
 	srand (static_cast <unsigned> (glfwGetTime()));
@@ -101,6 +82,7 @@ int main( void )
 	float rotZ = 0.0f;
 	float rotSpeed = 1.0f;
 	int score = 0;
+	int oldState = GLFW_RELEASE;
 
 	float deltaTime = 0.0f, lastFrame = 0.0f;
 	float shininess = 300.0f;
@@ -205,6 +187,9 @@ int main( void )
 	for(int i = 0; i < AST_N; i++)
 		asteroids[i] = Asteroid(lightPos, camPos, view_matrix, projection_matrix, lightSpaceMatrix, ambientColor, diffuseColor, depthMap);
 
+	// lasers generation
+	vector<unique_ptr<laser>> lasers = Utilities::loadLasers(view_matrix, projection_matrix, laserShader);
+
 	// shader configuration
 	// --------------------
 	holoShader.use();
@@ -267,18 +252,20 @@ int main( void )
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		Utilities::renderFalcon(shadowShader, falcon, falcon_transform);
-//		for(int i = 0; i < 5; i++)
-//			asteroids[i].DrawShadows(asteroid);
+		//		for(int i = 0; i < 5; i++)
+		//			asteroids[i].DrawShadows(asteroid);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		// reset viewport
+		glfwGetWindowSize(window, &width, &height);
 		glViewport(0, 0, width, height);
 
 		// 2 - render scene as normal using the generated depth/shadow map
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);
-		glfwGetWindowSize(window, &width, &height);
+
+		projection_matrix = glm::perspective(glm::radians(45.0f), (float)width/(float)height, 0.1f, 215.0f);
 		glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -348,15 +335,27 @@ int main( void )
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		Utilities::renderLand(landShader, land, land_transform);
 
-		// laser render
-		laserShader.use();
-		laserShader.setMat4("view", view_matrix);
-		laserShader.setMat4("projection", projection_matrix);
-		laser_transform = glm::mat4();
-		laser_transform = glm::translate(laser_transform, vec3(deltaX, deltaY, -2.f));
-		laser_transform = glm::scale(laser_transform, glm::vec3(0.15,0.15,0.25));
-		laserShader.setMat4("model", laser_transform);
-		laser.Draw(laserShader);
+		// shoot
+		int state = glfwGetKey(window, GLFW_KEY_SPACE);
+		if (oldState == GLFW_RELEASE && state == GLFW_PRESS)
+			Utilities::shoot(lasers, deltaX, deltaY);
+		oldState = state;
+
+		for(int i = 0; i < laser::max; i++)
+		{
+			lasers[i]->updateTransform();
+			lasers[i]->Draw(laserModel);
+		}
+
+//		// laserModel render
+//		laserShader.use();
+//		laserShader.setMat4("view", view_matrix);
+//		laserShader.setMat4("projection", projection_matrix);
+//		laser_transform = glm::mat4();
+//		laser_transform = glm::translate(laser_transform, vec3(deltaX, deltaY, -2.f));
+//		laser_transform = glm::scale(laser_transform, glm::vec3(0.15,0.15,0.25));
+//		laserShader.setMat4("model", laser_transform);
+//		laserModel.Draw(laserShader);
 
 		// render asteroids
 		for(int i = 0; i < AST_N; i++)
@@ -364,10 +363,8 @@ int main( void )
 
 		// hologram render
 		Utilities::renderHologram(holoShader, vader);
-		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-			score ++;
 
-		Utilities::renderScore(holoShader, numbers[(score/10) % 10], numbers[score % 10]);
+		Utilities::renderScore(holoShader, *numbers[(score/10) % 10], *numbers[score % 10]);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

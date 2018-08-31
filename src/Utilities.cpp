@@ -16,7 +16,6 @@ void Utilities::GLWF_init()
 		getchar();
 	}
 
-	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
@@ -204,3 +203,40 @@ void Utilities::renderScore(Shader &holoShader, Model &tens, Model &units)
 	holoShader.setMat3("normalMat", normalMat);
 	units.Draw(holoShader);
 }
+
+vector<unique_ptr<Model>> Utilities::loadNumbers()
+{
+	vector<unique_ptr<Model>> numbers;
+	numbers.push_back(unique_ptr<Model>(new Model("src/numbers/zero.obj")));
+	numbers.push_back(unique_ptr<Model>(new Model("src/numbers/one.obj")));
+	numbers.push_back(unique_ptr<Model>(new Model("src/numbers/two.obj")));
+	numbers.push_back(unique_ptr<Model>(new Model("src/numbers/three.obj")));
+	numbers.push_back(unique_ptr<Model>(new Model("src/numbers/four.obj")));
+	numbers.push_back(unique_ptr<Model>(new Model("src/numbers/five.obj")));
+	numbers.push_back(unique_ptr<Model>(new Model("src/numbers/six.obj")));
+	numbers.push_back(unique_ptr<Model>(new Model("src/numbers/seven.obj")));
+	numbers.push_back(unique_ptr<Model>(new Model("src/numbers/eight.obj")));
+	numbers.push_back(unique_ptr<Model>(new Model("src/numbers/nine.obj")));
+
+	return numbers;
+}
+
+vector<unique_ptr<laser>> Utilities::loadLasers(const glm::mat4 &view_matrix, const glm::mat4 &projection_matrix, Shader & shader)
+{
+	vector<unique_ptr<laser>> lasers;
+	for(int i=0; i < laser::max; i++)
+		lasers.push_back(unique_ptr<laser>(new laser(view_matrix, projection_matrix, shader)));
+	return lasers;
+}
+
+int Utilities::currentLaser = 0;
+
+void Utilities::shoot(vector<unique_ptr<laser>> &lasers, const int &deltaX, const int &deltaY)
+{
+	if(laser::count == 0) return;
+	lasers[currentLaser]->shoot(deltaX, deltaY);
+	currentLaser++;
+	if(currentLaser >= 10)
+		currentLaser = 0;
+}
+

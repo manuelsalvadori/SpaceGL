@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include "Shader.h"
 #include "Model.h"
+#include "laser.h"
 
 class Utilities
 {
@@ -22,8 +23,11 @@ public:
 	static void moveLight(GLFWwindow *window, glm::vec3 &lightPos);
 	static void updateFalcon(glm::mat4 &falcon_transform, const float &deltaX, float &deltaY, float &rotX, float &rotY, float &rotZ);
 	static void renderScore(Shader &holoShader, Model &tens, Model &units);
-	static void loadNumbers(Model *numbers);
-
+	static vector<unique_ptr<Model>> loadNumbers();
+	static vector<unique_ptr<laser>> loadLasers(const glm::mat4 &view_matrix, const glm::mat4 &projection_matrix, Shader & shader);
+	static void shoot(vector<unique_ptr<laser>> &lasers, const int &deltaX, const int &deltaY);
+private:
+	static int currentLaser;
 };
 
 #endif /* SRC_UTILITIES_H_ */

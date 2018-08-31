@@ -6,7 +6,7 @@ in vec2 TexCoords;
 uniform sampler2D image;
 
 uniform bool horizontal;
-uniform float weight[9] = float[] (0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162, 0.0152162162, 0.0142162162, 0.0132162162, 0.0122162162);
+uniform float weight[7] = float[] (0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162, 0.0152162162, 0.0142162162);
 
 void main()
 {             
