@@ -20,6 +20,7 @@ public:
 	virtual ~Asteroid();
 
 	Shader shader;
+	Shader shadow;
 	glm::vec3 position;
 	glm::vec3 scale;
 	glm::mat4 transform;
@@ -31,6 +32,7 @@ public:
 	unsigned int depthMap;
 
 	void Draw(Model&);
+	void DrawShadow(Model &model);
 	void updateTransform();
 
 private:

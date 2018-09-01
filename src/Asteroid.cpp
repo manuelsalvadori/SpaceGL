@@ -7,6 +7,7 @@ Asteroid::Asteroid(const glm::vec3 &lightPos, const glm::vec3 &camPos, const glm
 		const glm::vec3 &diffuseColor, unsigned int depthMap): alpha(0.0f), depthMap(depthMap)
 {
 	shader = Shader("src/shaders/matAsteroid.vs","src/shaders/matAsteroid.fs");
+	shadow = Shader("src/shaders/shadowAst.vs","src/shaders/shadowMap.fs");
 	shader.use();
 	shader.setVec3("light.position", lightPos);
 	shader.setVec3("lightPos", lightPos);
@@ -27,12 +28,26 @@ Asteroid::Asteroid(const glm::vec3 &lightPos, const glm::vec3 &camPos, const glm
 	shader.setFloat("alpha", 0.0f);
 
 	// displacement parameters
-	shader.setFloat("p1", 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f))));
-	shader.setFloat("p2", 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f))));
-	shader.setFloat("p3", 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f))));
-	shader.setFloat("p4", 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f))));
-	shader.setFloat("noiseK", 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f))));
+	float p1 = 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
+	float p2 = 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
+	float p3 = 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
+	float p4 = 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
+	float noiseK = 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
+
+	shader.setFloat("p1", p1);
+	shader.setFloat("p2", p2);
+	shader.setFloat("p3", p3);
+	shader.setFloat("p4", p4);
+	shader.setFloat("noiseK", noiseK);
 	shader.setFloat("r", 0.1f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.9f))));
+
+	shadow.use();
+	shadow.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+	shadow.setFloat("p1", p1);
+	shadow.setFloat("p2", p2);
+	shadow.setFloat("p3", p3);
+	shadow.setFloat("p4", p4);
+	shadow.setFloat("noiseK", noiseK);
 
 	rotX = 0.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
 	rotY = 0.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
@@ -57,7 +72,7 @@ Asteroid::~Asteroid(){}
 
 void Asteroid::updateTransform()
 {
-	position.z += 2.5f;
+	position.z += 2.0f;
 	if(position.z > 5)
 	{
 		alpha = 0.0f;
@@ -71,13 +86,26 @@ void Asteroid::updateTransform()
 		scale.z = 0.25f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.5f)));
 		scale *= scaleK;
 
-		shader.use();
-		shader.setFloat("p1", 0.3f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.6f))));
-		shader.setFloat("p2", 0.3f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.6f))));
-		shader.setFloat("p3", 0.3f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.6f))));
-		shader.setFloat("p4", 0.3f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.6f))));
-		shader.setFloat("noiseK", 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f))));
+		// displacement parameters
+		float p1 = 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
+		float p2 = 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
+		float p3 = 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
+		float p4 = 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
+		float noiseK = 0.5f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
+
+		shader.setFloat("p1", p1);
+		shader.setFloat("p2", p2);
+		shader.setFloat("p3", p3);
+		shader.setFloat("p4", p4);
+		shader.setFloat("noiseK", noiseK);
 		shader.setFloat("r", 0.1f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.9f))));
+
+//		shadow.use();
+//		shadow.setFloat("p1", p1);
+//		shadow.setFloat("p2", p2);
+//		shadow.setFloat("p3", p3);
+//		shadow.setFloat("p4", p4);
+//		shadow.setFloat("noiseK", noiseK);
 	}
 
 	if(alpha < 1.0)
@@ -106,6 +134,15 @@ void Asteroid::Draw(Model &model)
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, depthMap);
 	model.Draw(shader);
+}
+
+void Asteroid::DrawShadow(Model &model)
+{
+	if(position.z < -20.f) return;
+	shadow.use();
+	shadow.setMat4("model", transform);
+	shadow.setMat3("normalMat", glm::inverseTranspose(glm::mat3(transform)));
+	model.Draw(shadow);
 }
 
 int Asteroid::count = 0;

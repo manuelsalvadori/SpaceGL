@@ -48,6 +48,5 @@ void laser::Draw(Model &model)
 	shader.setMat3("normalMat", glm::inverseTranspose(glm::mat3(transform)));
 
 	model.Draw(shader);
-	cout << "shooted" << endl;
 }
 

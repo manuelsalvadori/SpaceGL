@@ -20,8 +20,7 @@
 
 using namespace glm;
 
-GLFWwindow* window;
-void renderQuad();
+GLFWwindow *window;
 
 int main( void )
 {
@@ -252,8 +251,8 @@ int main( void )
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		Utilities::renderFalcon(shadowShader, falcon, falcon_transform);
-		//		for(int i = 0; i < 5; i++)
-		//			asteroids[i].DrawShadows(asteroid);
+//		for(int i = 0; i < 5; i++)
+//			asteroids[i].DrawShadow(asteroid);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -314,18 +313,15 @@ int main( void )
 		landShader.setVec3("viewPos", camPos);
 		landShader.setMat4("view", view_matrix);
 		landShader.setMat4("projection", projection_matrix);
-
 		landShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
 		// light properties
-
 		landShader.setVec3("light.ambient", ambientColor);
 		landShader.setVec3("light.diffuse", diffuseColor);
 		landShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
 		// material properties
-
-		landShader.setVec3("material.ambient", 0.5f, 0.5f, 0.5f);
+		landShader.setVec3("material.ambient", 0.45f, 0.45f, 0.45f);
 		landShader.setVec3("material.diffuse", 0.84f, 0.84f, 0.84f);
 		landShader.setVec3("material.specular", 0.2f, 0.2f, 0.2f);
 		landShader.setFloat("material.shininess", shininess);
@@ -341,21 +337,12 @@ int main( void )
 			Utilities::shoot(lasers, deltaX, deltaY);
 		oldState = state;
 
+		// render shooted lasers
 		for(int i = 0; i < laser::max; i++)
 		{
 			lasers[i]->updateTransform();
 			lasers[i]->Draw(laserModel);
 		}
-
-//		// laserModel render
-//		laserShader.use();
-//		laserShader.setMat4("view", view_matrix);
-//		laserShader.setMat4("projection", projection_matrix);
-//		laser_transform = glm::mat4();
-//		laser_transform = glm::translate(laser_transform, vec3(deltaX, deltaY, -2.f));
-//		laser_transform = glm::scale(laser_transform, glm::vec3(0.15,0.15,0.25));
-//		laserShader.setMat4("model", laser_transform);
-//		laserModel.Draw(laserShader);
 
 		// render asteroids
 		for(int i = 0; i < AST_N; i++)
@@ -363,7 +350,6 @@ int main( void )
 
 		// hologram render
 		Utilities::renderHologram(holoShader, vader);
-
 		Utilities::renderScore(holoShader, *numbers[(score/10) % 10], *numbers[score % 10]);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -381,7 +367,7 @@ int main( void )
 			glClear(GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);
 			blurShader.setInt("horizontal", horizontal);
 			glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongColorbuffers[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
-			renderQuad();
+			Utilities::renderQuad();
 			horizontal = !horizontal;
 			if (first_iteration)
 				first_iteration = false;
@@ -399,16 +385,10 @@ int main( void )
 		bloomShader.setBool("bloom", bloom);
 		bloomShader.setFloat("width", width);
 		bloomShader.setFloat("height", height);
-		renderQuad();
+		Utilities::renderQuad();
 
 		// render Depth map to quad for visual debugging
-		// ---------------------------------------------
-		//		debugDepthQuad.use();
-		//		debugDepthQuad.setFloat("near_plane", near_plane);
-		//		debugDepthQuad.setFloat("far_plane", far_plane);
-		//		glActiveTexture(GL_TEXTURE0);
-		//		glBindTexture(GL_TEXTURE_2D, depthMap);
-		//		renderQuad();
+		//Utilities::debugDepthMap(debugDepthQuad, near_plane, far_plane, depthMap);
 
 		// Swap buffers
 		glfwSwapBuffers(window);
@@ -427,35 +407,4 @@ int main( void )
 
 	glfwTerminate();
 	return 0;
-}
-
-
-unsigned int quadVAO = 0;
-unsigned int quadVBO;
-void renderQuad()
-{
-	if (quadVAO == 0)
-	{
-		float quadVertices[] =
-		{
-				// positions        // texture Coords
-				-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-				-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-				1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-				1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-		};
-		// setup plane VAO
-		glGenVertexArrays(1, &quadVAO);
-		glGenBuffers(1, &quadVBO);
-		glBindVertexArray(quadVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	}
-	glBindVertexArray(quadVAO);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glBindVertexArray(0);
 }
