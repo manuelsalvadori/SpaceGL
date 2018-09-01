@@ -5,6 +5,8 @@ in vec2 TexCoords;
 
 uniform sampler2D scene;
 uniform sampler2D bloomBlur;
+uniform sampler2D vignette;
+uniform float vigAlpha;
 uniform float exposure;
 uniform bool bloom;
 
@@ -54,7 +56,8 @@ void main()
 	//vec3 hdrColor = texture(scene, TexCoords).rgb;
 	vec3 hdrColor = Fxaa(scene, vec2(width, height));
 	vec3 bloomColor = texture(bloomBlur, TexCoords).rgb;
-
+	vec4 vignetteColor = texture(vignette, TexCoords);
+	
 	if(bloom)
 		hdrColor += bloomColor; // additive blending
 	
@@ -63,5 +66,5 @@ void main()
 	// also gamma correct while we're at it       
 	//hdrColor = pow(hdrColor, vec3(1.0 / gamma));
 
-	FragColor = vec4(hdrColor, 1.0);
+	FragColor = vec4(hdrColor, 1.0) + vignetteColor*vigAlpha;
 }

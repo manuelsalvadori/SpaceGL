@@ -24,6 +24,7 @@ public:
 	glm::vec3 position;
 	glm::vec3 scale;
 	glm::mat4 transform;
+	float boundSphere;
 	float rotX;
 	float rotY;
 	float rotZ;
@@ -34,9 +35,13 @@ public:
 	void Draw(Model&);
 	void DrawShadow(Model &model);
 	void updateTransform();
+	bool checkCollisionFalcon(const glm::vec3 &pos);
+	bool checkCollisionLaser(const glm::vec3 &pos);
 
 private:
 	static int count;
+	float calculateBoundSphere();
+	bool hitted = false;
 
 };
 

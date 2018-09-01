@@ -17,6 +17,7 @@
 #include <glm/gtc/matrix_inverse.hpp>
 
 #define AST_N 4
+#define VIGNETTE_DURATION 16
 
 using namespace glm;
 
@@ -67,11 +68,11 @@ int main( void )
 	Model sky("src/skybox/sky.obj");
 	glm::mat4 sky_transform = glm::mat4();
 	Model vader("src/falcon/vader.obj");
-
-	vector<unique_ptr<Model>> numbers = Utilities::loadNumbers();
-
 	Model laserModel("src/falcon/laser.obj");
 	glm::mat4 laser_transform;
+
+	vector<unique_ptr<Model>> numbers = Utilities::loadNumbers();
+	unsigned int vignetteTexture = Utilities::loadTexture("src/skybox/vignette.png");
 
 	srand (static_cast <unsigned> (glfwGetTime()));
 	float deltaY = -4.0f;
@@ -81,6 +82,7 @@ int main( void )
 	float rotZ = 0.0f;
 	float rotSpeed = 1.0f;
 	int score = 0;
+	int vignette = 0;
 	int oldState = GLFW_RELEASE;
 
 	float deltaTime = 0.0f, lastFrame = 0.0f;
@@ -208,6 +210,7 @@ int main( void )
 	bloomShader.use();
 	bloomShader.setInt("scene", 0);
 	bloomShader.setInt("bloomBlur", 1);
+	bloomShader.setInt("vignette", 2);
 	// visual debug shadow
 	//	debugDepthQuad.use();
 	//	debugDepthQuad.setInt("depthMap", 0);
@@ -303,8 +306,12 @@ int main( void )
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
-		Utilities::renderFalcon(simpleShader, falcon, falcon_transform);
 
+		for(int i = 0; i < AST_N; i++)
+			if(asteroids[i].checkCollisionFalcon(glm::vec3(deltaX, deltaY, 0.0f)))
+				vignette = VIGNETTE_DURATION;
+
+		Utilities::renderFalcon(simpleShader, falcon, falcon_transform);
 
 		// render land
 		landShader.use();
@@ -381,10 +388,16 @@ int main( void )
 		glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal]);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, vignetteTexture);
 		bloomShader.setFloat("exposure", 1.0f);
 		bloomShader.setBool("bloom", bloom);
 		bloomShader.setFloat("width", width);
 		bloomShader.setFloat("height", height);
+		bloomShader.setFloat("vigAlpha", static_cast<float>(vignette)/static_cast<float>(VIGNETTE_DURATION));
+
+		if(vignette > 0)
+			vignette --;
 		Utilities::renderQuad();
 
 		// render Depth map to quad for visual debugging

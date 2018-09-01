@@ -14,6 +14,9 @@ out vec3 TangentLightPos;
 out vec3 TangentViewPos;
 out vec3 TangentFragPos;
 
+// visual debug bounding sphere
+// out vec3 debugOrigin;
+
 out float noise;
 
 uniform mat4 model;
@@ -57,6 +60,7 @@ void main()
 	//vec3 newPos = aPos + (aNormal * max(displacement,0.f));
 	vec3 newPos = aPos + (aNormal * abs(displacement));
 	
+	//debugOrigin = vec3(model * vec4(0.,0.,0.,1.)); // visual debug bounding sphere
 	FragPos = vec3(model * vec4(newPos, 1.0));
 	
 	// normal mapping
@@ -70,7 +74,7 @@ void main()
 	TangentFragPos  = TBN * FragPos;
 
 	// shadow mapping
-	FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
+	//FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
 
 	gl_Position = projection * view * vec4(FragPos, 1.0);
 }

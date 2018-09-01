@@ -28,6 +28,7 @@ public:
 	static vector<unique_ptr<Model>> loadNumbers();
 	static vector<unique_ptr<laser>> loadLasers(const glm::mat4 &view_matrix, const glm::mat4 &projection_matrix, Shader & shader);
 	static void shoot(vector<unique_ptr<laser>> &lasers, const int &deltaX, const int &deltaY);
+	static unsigned int loadTexture(string const &path);
 private:
 	static int currentLaser;
 };

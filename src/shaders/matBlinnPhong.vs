@@ -24,9 +24,14 @@ uniform mat4 lightSpaceMatrix;
 uniform vec3 lightPos;
 uniform vec3 viewPos;
 
+// visual debug bounding sphere
+//out vec3 debugOrigin;
+
 
 void main()
 {
+	//debugOrigin = vec3(model * vec4(0.,0.,220.,1.)); // visual debug bounding sphere
+	
 	FragPos = vec3(model * vec4(aPos, 1.0));
 	TexCoords = aTexCoords;
 	Normal = normalMat * aNormal;

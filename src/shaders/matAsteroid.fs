@@ -28,6 +28,8 @@ in vec3 TangentViewPos;
 in vec3 TangentFragPos;
 in float noise;
 
+//uniform float sphere;	// visual debug bounding sphere
+//in vec3 debugOrigin;
 uniform float alpha;
 uniform float r;
 uniform vec3 viewPos;
@@ -93,21 +95,17 @@ void main()
 
 	// diffuse
 	vec3 lightDir = normalize(TangentLightPos - TangentFragPos);
-	//vec3 lightDir = normalize(light.position - FragPos);
-	//vec3 normal = normalize(Normal);
 
 	float diff = max(dot(lightDir, normal), 0.0);
 	vec3 diffuse = light.diffuse * (diff * color * material.diffuse);//diff * color;
 
 	// specular
-	//vec3 viewDir = normalize(viewPos - FragPos);
 	vec3 viewDir = normalize(TangentViewPos - TangentFragPos);
 	vec3 reflectDir = reflect(-lightDir, normal);
 	vec3 halfwayDir = normalize(lightDir + viewDir);  
 	float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess) * when_gt(diff, 0.0f);
 
 	vec3 specular = light.specular * (spec * material.specular);  //vec3(0.3) * spec; // assuming bright white light color
-	//FragColor = vec4(ambient + diffuse + specular, 1.0); // no shadows 
 
 	// calculate shadow
 	//float shadow = ShadowCalculation(FragPosLightSpace);                    
@@ -116,4 +114,8 @@ void main()
 
 	FragColor = vec4(lighting*alpha, alpha);
 	BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+	
+	// visual debug bounding sphere
+//	if(abs(length(debugOrigin - FragPos)) < sphere*1.8)
+//		FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }

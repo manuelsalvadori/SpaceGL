@@ -37,6 +37,9 @@ uniform sampler2D texture_emission1;
 uniform sampler2D shadowMap;
 uniform float time;
 
+// visual debug bounding sphere
+//in vec3 debugOrigin;
+
 float when_gt(float x, float y)
 {
 	return max(sign(x - y), 0.0);
@@ -123,4 +126,7 @@ void main()
 		BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 	
 	FragColor = vec4(lighting, 1.0);
+	// visual debug bounding sphere
+//	if(abs(length(debugOrigin - FragPos)) < 2)
+//		FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }
