@@ -280,6 +280,22 @@ void Utilities::debugDepthMap(Shader &debugDepthQuad, const int& near_plane, con
 	renderQuad();
 }
 
+vector<int> Utilities::loadCounters(int ast)
+{
+	vector<int> counters;
+	for(int i=1; i<=ast; i++)
+		counters.push_back(0);
+	return counters;
+}
+
+vector<unsigned int> Utilities::loadExplosionTextures()
+{
+	vector<unsigned int> explosionTextures;
+	for(int i=1; i<=64; i++)
+		explosionTextures.push_back(Utilities::loadTexture("src/asteroid/particles/Particle"+to_string(i)+".png"));
+	return explosionTextures;
+}
+
 unsigned int Utilities::loadTexture(string const &path)
 {
 //	string directory = path.substr(0, path.find_last_of('/'));

@@ -21,6 +21,7 @@ public:
 
 	Shader shader;
 	Shader shadow;
+	Shader explosion;
 	glm::vec3 position;
 	glm::vec3 scale;
 	glm::mat4 transform;
@@ -30,10 +31,12 @@ public:
 	float rotZ;
 	float alpha;
 	float scaleK;
+	bool explode = false;
 	unsigned int depthMap;
 
 	void Draw(Model&);
 	void DrawShadow(Model &model);
+	void DrawExplosion(Model &model, unsigned int texture, int &i);
 	void updateTransform();
 	bool checkCollisionFalcon(const glm::vec3 &pos);
 	bool checkCollisionLaser(const glm::vec3 &pos);

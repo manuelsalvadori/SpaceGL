@@ -8,6 +8,7 @@ Asteroid::Asteroid(const glm::vec3 &lightPos, const glm::vec3 &camPos, const glm
 {
 	shader = Shader("src/shaders/matAsteroid.vs","src/shaders/matAsteroid.fs");
 	shadow = Shader("src/shaders/shadowAst.vs","src/shaders/shadowMap.fs");
+	explosion = Shader("src/shaders/matSky.vs","src/shaders/explosion.fs");
 	shader.use();
 	shader.setVec3("light.position", lightPos);
 	shader.setVec3("lightPos", lightPos);
@@ -41,13 +42,16 @@ Asteroid::Asteroid(const glm::vec3 &lightPos, const glm::vec3 &camPos, const glm
 	shader.setFloat("noiseK", noiseK);
 	shader.setFloat("r", 0.1f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.9f))));
 
-//	shadow.use();
-//	shadow.setMat4("lightSpaceMatrix", lightSpaceMatrix);
-//	shadow.setFloat("p1", p1);
-//	shadow.setFloat("p2", p2);
-//	shadow.setFloat("p3", p3);
-//	shadow.setFloat("p4", p4);
-//	shadow.setFloat("noiseK", noiseK);
+	explosion.use();
+	explosion.setMat4("view", view_matrix);
+	explosion.setMat4("projection", projection_matrix);
+	//	shadow.use();
+	//	shadow.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+	//	shadow.setFloat("p1", p1);
+	//	shadow.setFloat("p2", p2);
+	//	shadow.setFloat("p3", p3);
+	//	shadow.setFloat("p4", p4);
+	//	shadow.setFloat("noiseK", noiseK);
 
 	rotX = 0.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
 	rotY = 0.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1.0f)));
@@ -108,12 +112,12 @@ void Asteroid::updateTransform()
 		shader.setFloat("noiseK", noiseK);
 		shader.setFloat("r", 0.1f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.9f))));
 
-//		shadow.use();
-//		shadow.setFloat("p1", p1);
-//		shadow.setFloat("p2", p2);
-//		shadow.setFloat("p3", p3);
-//		shadow.setFloat("p4", p4);
-//		shadow.setFloat("noiseK", noiseK);
+		//		shadow.use();
+		//		shadow.setFloat("p1", p1);
+		//		shadow.setFloat("p2", p2);
+		//		shadow.setFloat("p3", p3);
+		//		shadow.setFloat("p4", p4);
+		//		shadow.setFloat("noiseK", noiseK);
 	}
 
 	if(alpha < 1.0)
@@ -163,7 +167,34 @@ bool Asteroid::checkCollisionFalcon(const glm::vec3 &pos)
 bool Asteroid::checkCollisionLaser(const glm::vec3 &pos)
 {
 	if(hitted) return false;
-	return hitted = (glm::distance(position, pos) < (1.f + boundSphere));
+
+	if (hitted = (glm::distance(position, pos) < (1.f + boundSphere)))
+		explode = true;
+
+	return hitted;
+}
+
+void Asteroid::DrawExplosion(Model &model, unsigned int texture, int &i)
+{
+	if(!explode) return;
+	if(position.z > 2 || i >= 63)
+	{
+		i = 0;
+		explode = false;
+		return;
+	}
+
+	explosion.use();
+	transform = glm::mat4();
+	transform = glm::translate(transform, position);
+	transform = glm::rotate(transform, rotZ, glm::vec3(0.0f, 0.0f, 1.0f));
+	transform = glm::scale(transform, glm::vec3(scaleK*5.f));
+	explosion.setMat4("model", transform);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	model.Draw(explosion);
+
+	i += 2;
 }
 
 int Asteroid::count = 0;

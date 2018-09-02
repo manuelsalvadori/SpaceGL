@@ -60,6 +60,7 @@ int main( void )
 	glm::mat3 normalMat;
 
 	Model asteroid("src/asteroid/icosphere2.obj");
+	Model quad("src/asteroid/explosionQuad.obj");
 	Model falcon("src/falcon/Millennium_Falcon.obj");
 	glm::mat4 falcon_transform;
 	Model land("src/falcon/cube.obj");
@@ -72,6 +73,8 @@ int main( void )
 
 	vector<unique_ptr<Model>> numbers = Utilities::loadNumbers();
 	unsigned int vignetteTexture = Utilities::loadTexture("src/skybox/vignette.png");
+	vector<unsigned int> explosionTextures = Utilities::loadExplosionTextures();
+	vector<int> counters = Utilities::loadCounters(AST_N);
 
 	srand (static_cast <unsigned> (glfwGetTime()));
 	float deltaY = -4.0f;
@@ -253,8 +256,8 @@ int main( void )
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		Utilities::renderFalcon(shadowShader, falcon, falcon_transform);
-//		for(int i = 0; i < 5; i++)
-//			asteroids[i].DrawShadow(asteroid);
+		//		for(int i = 0; i < 5; i++)
+		//			asteroids[i].DrawShadow(asteroid);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -366,6 +369,10 @@ int main( void )
 		// render asteroids
 		for(int i = 0; i < AST_N; i++)
 			asteroids[i].Draw(asteroid);
+
+		// render explosions
+		for(int i = 0; i < AST_N; i++)
+			asteroids[i].DrawExplosion(quad, explosionTextures[counters[i]], counters[i]);
 
 		// hologram render
 		Utilities::renderHologram(holoShader, vader);
