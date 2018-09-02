@@ -3,9 +3,9 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include "Laser.h"
 #include "Shader.h"
 #include "Model.h"
-#include "laser.h"
 
 class Utilities
 {
@@ -26,8 +26,8 @@ public:
 	static void renderQuad();
 	static void debugDepthMap(Shader &debugDepthQuad, const int& near_plane, const int& far_plane, const int& depthMap);
 	static vector<unique_ptr<Model>> loadNumbers();
-	static vector<unique_ptr<laser>> loadLasers(const glm::mat4 &view_matrix, const glm::mat4 &projection_matrix, Shader & shader);
-	static void shoot(vector<unique_ptr<laser>> &lasers, const int &deltaX, const int &deltaY);
+	static vector<unique_ptr<Laser>> loadLasers(const glm::mat4 &view_matrix, const glm::mat4 &projection_matrix, Shader & shader);
+	static void shoot(vector<unique_ptr<Laser>> &lasers, const int &deltaX, const int &deltaY);
 	static unsigned int loadTexture(string const &path);
 private:
 	static int currentLaser;

@@ -6,8 +6,6 @@
 #include "src/Shader.h"
 #include "src/Model.h"
 #include "src/Asteroid.h"
-#include "src/laser.h"
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -15,6 +13,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
+#include "src/Laser.h"
 
 #define AST_N 4
 #define VIGNETTE_DURATION 16
@@ -189,7 +188,7 @@ int main( void )
 		asteroids[i] = Asteroid(lightPos, camPos, view_matrix, projection_matrix, lightSpaceMatrix, ambientColor, diffuseColor, depthMap);
 
 	// lasers generation
-	vector<unique_ptr<laser>> lasers = Utilities::loadLasers(view_matrix, projection_matrix, laserShader);
+	vector<unique_ptr<Laser>> lasers = Utilities::loadLasers(view_matrix, projection_matrix, laserShader);
 
 	// shader configuration
 	// --------------------
@@ -263,7 +262,7 @@ int main( void )
 		glfwGetWindowSize(window, &width, &height);
 		glViewport(0, 0, width, height);
 
-		// 2 - render scene as normal using the generated depth/shadow map
+		// 2 - render scene as normal using the generated depth/shadow map------------------------------------------------------
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);
 
@@ -307,10 +306,6 @@ int main( void )
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 
-		for(int i = 0; i < AST_N; i++)
-			if(asteroids[i].checkCollisionFalcon(glm::vec3(deltaX, deltaY, 0.0f)))
-				vignette = VIGNETTE_DURATION;
-
 		Utilities::renderFalcon(simpleShader, falcon, falcon_transform);
 
 		// render land
@@ -338,6 +333,23 @@ int main( void )
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		Utilities::renderLand(landShader, land, land_transform);
 
+		// check collisions
+		for(int i = 0; i < AST_N; i++)
+		{
+			if(asteroids[i].checkCollisionFalcon(glm::vec3(deltaX, deltaY, 0.0f)))
+				vignette = VIGNETTE_DURATION;
+
+			for(int j = 0; j < Laser::max; j++)
+			{
+				if(lasers[j]->shooted && asteroids[i].checkCollisionLaser(lasers[j]->position))
+				{
+					score ++;
+					lasers[j]->reset();
+				}
+			}
+		}
+		cout << Laser::max - Laser::count << endl;
+
 		// shoot
 		int state = glfwGetKey(window, GLFW_KEY_SPACE);
 		if (oldState == GLFW_RELEASE && state == GLFW_PRESS)
@@ -345,7 +357,7 @@ int main( void )
 		oldState = state;
 
 		// render shooted lasers
-		for(int i = 0; i < laser::max; i++)
+		for(int i = 0; i < Laser::max; i++)
 		{
 			lasers[i]->updateTransform();
 			lasers[i]->Draw(laserModel);

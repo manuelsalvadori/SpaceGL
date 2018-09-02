@@ -221,19 +221,19 @@ vector<unique_ptr<Model>> Utilities::loadNumbers()
 	return numbers;
 }
 
-vector<unique_ptr<laser>> Utilities::loadLasers(const glm::mat4 &view_matrix, const glm::mat4 &projection_matrix, Shader & shader)
+vector<unique_ptr<Laser>> Utilities::loadLasers(const glm::mat4 &view_matrix, const glm::mat4 &projection_matrix, Shader & shader)
 {
-	vector<unique_ptr<laser>> lasers;
-	for(int i=0; i < laser::max; i++)
-		lasers.push_back(unique_ptr<laser>(new laser(view_matrix, projection_matrix, shader)));
+	vector<unique_ptr<Laser>> lasers;
+	for(int i=0; i < Laser::max; i++)
+		lasers.push_back(unique_ptr<Laser>(new Laser(view_matrix, projection_matrix, shader)));
 	return lasers;
 }
 
 int Utilities::currentLaser = 0;
 
-void Utilities::shoot(vector<unique_ptr<laser>> &lasers, const int &deltaX, const int &deltaY)
+void Utilities::shoot(vector<unique_ptr<Laser>> &lasers, const int &deltaX, const int &deltaY)
 {
-	if(laser::count == 0) return;
+	if(Laser::count == 0) return;
 	lasers[currentLaser]->shoot(deltaX, deltaY);
 	currentLaser++;
 	if(currentLaser >= 10)

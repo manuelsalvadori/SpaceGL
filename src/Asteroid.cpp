@@ -150,7 +150,7 @@ void Asteroid::DrawShadow(Model &model)
 	if(hitted || position.z < -20.f) return;
 	shadow.use();
 	shadow.setMat4("model", transform);
-	shadow.setMat3("normalMat", glm::inverseTranspose(glm::mat3(transform)));
+	shader.setMat3("normalMat", glm::inverseTranspose(glm::mat3(transform)));
 	model.Draw(shadow);
 }
 
@@ -162,7 +162,8 @@ bool Asteroid::checkCollisionFalcon(const glm::vec3 &pos)
 
 bool Asteroid::checkCollisionLaser(const glm::vec3 &pos)
 {
-	return glm::distance(position, pos) < (0.05f + boundSphere);
+	if(hitted) return false;
+	return hitted = (glm::distance(position, pos) < (1.f + boundSphere));
 }
 
 int Asteroid::count = 0;

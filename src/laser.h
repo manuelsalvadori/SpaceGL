@@ -11,14 +11,14 @@
 #include <glm/gtc/matrix_inverse.hpp>
 #include <GLFW/glfw3.h>
 
-class laser {
+class Laser {
 public:
-	laser();
-	laser(const glm::mat4 &view_matrix, const glm::mat4 &projection_matrix, Shader & shader);
-	virtual ~laser();
+	Laser();
+	Laser(const glm::mat4 &view_matrix, const glm::mat4 &projection_matrix, Shader & shader);
+	virtual ~Laser();
 
 	Shader shader;
-	glm::vec3 position;
+	glm::vec3 position = glm::vec3(0.0);
 	const glm::vec3 scale = glm::vec3(0.2, 0.2, 0.3);
 	glm::mat4 transform;
 	bool shooted = false;
@@ -26,6 +26,7 @@ public:
 	void Draw(Model&);
 	void updateTransform();
 	void shoot(const int &deltaX, const int &deltaY);
+	void reset();
 
 	const static int max;
 	static int count;
