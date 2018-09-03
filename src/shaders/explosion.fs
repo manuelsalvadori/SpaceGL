@@ -10,6 +10,7 @@ uniform sampler2D explosion;
 
 void main()
 {
-	FragColor = texture(explosion, TexCoords).rgba;
-	BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+	vec4 color = texture(explosion, TexCoords).rgba; 
+	FragColor = color;
+	BrightColor = color * 0.3f;
 }

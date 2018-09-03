@@ -8,7 +8,6 @@ uniform sampler2D bloomBlur;
 uniform sampler2D vignette;
 uniform float vigAlpha;
 uniform float exposure;
-uniform bool bloom;
 
 float FXAA_SPAN_MAX = 8.0f;
 float FXAA_REDUCE_MUL = 1.0f/8.0f;
@@ -58,8 +57,7 @@ void main()
 	vec3 bloomColor = texture(bloomBlur, TexCoords).rgb;
 	vec4 vignetteColor = texture(vignette, TexCoords);
 	
-	if(bloom)
-		hdrColor += bloomColor; // additive blending
+	hdrColor += bloomColor; // additive blending
 	
 	// tone mapping
 	//hdrColor = vec3(1.0) - exp(-hdrColor * exposure);

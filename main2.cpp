@@ -90,8 +90,6 @@ int main( void )
 	float deltaTime = 0.0f, lastFrame = 0.0f;
 	float shininess = 300.0f;
 
-	bool bloom = true;
-
 	// configure depth map FBO
 	// -----------------------
 	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
@@ -129,7 +127,7 @@ int main( void )
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		// attach texture to framebuffer
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0);
@@ -162,10 +160,10 @@ int main( void )
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongColorbuffers[i], 0);
-		// also check if framebuffers are complete (no need for depth buffer)
+
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 			std::cout << "Framebuffer not complete!" << std::endl;
 	}
@@ -198,6 +196,7 @@ int main( void )
 	holoShader.use();
 	holoShader.setMat4("view", view_matrix);
 	holoShader.setMat4("projection", projection_matrix);
+	Utilities::setHoloShader(holoShader);
 	skyShader.use();
 	sky_transform = glm::mat4();
 	sky_transform = glm::scale(sky_transform, glm::vec3(20.5f, 20.5f, 1.f));
@@ -205,14 +204,35 @@ int main( void )
 	skyShader.setMat4("model", sky_transform);
 	simpleShader.use();
 	simpleShader.setInt("shadowMap", 0);
+	simpleShader.setVec3("light.ambient", ambientColor);
+	simpleShader.setVec3("light.diffuse", diffuseColor);
+	simpleShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+	simpleShader.setVec3("material.ambient", 0.3f, 0.3f, 0.3f);
+	simpleShader.setVec3("material.diffuse", 0.74f, 0.74f, 0.74f);
+	simpleShader.setVec3("material.specular", 0.6f, 0.6f, 0.6f);
+	simpleShader.setFloat("material.shininess", shininess);
 	landShader.use();
 	landShader.setInt("shadowMap", 0);
+	landShader.setVec3("light.ambient", ambientColor);
+	landShader.setVec3("light.diffuse", diffuseColor);
+	landShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+	landShader.setVec3("material.ambient", 0.45f, 0.45f, 0.45f);
+	landShader.setVec3("material.diffuse", 0.84f, 0.84f, 0.84f);
+	landShader.setVec3("material.specular", 0.2f, 0.2f, 0.2f);
+	landShader.setFloat("material.shininess", shininess);
+	land_transform = glm::mat4();
+	land_transform = glm::translate(land_transform, glm::vec3(0.0f, -11.f, 4.0f));
+	land_transform = glm::rotate(land_transform, 0.1f, glm::vec3(1.0f, 0.f, 0.0f));
+	land_transform = glm::scale(land_transform, glm::vec3(40.0f, 10.0f, 40.0f));
 	blurShader.use();
 	blurShader.setInt("image", 0);
 	bloomShader.use();
 	bloomShader.setInt("scene", 0);
 	bloomShader.setInt("bloomBlur", 1);
 	bloomShader.setInt("vignette", 2);
+	bloomShader.setFloat("exposure", 1.0f);
+	bloomShader.setFloat("width", width);
+	bloomShader.setFloat("height", height);
 	// visual debug shadow
 	//	debugDepthQuad.use();
 	//	debugDepthQuad.setInt("depthMap", 0);
@@ -232,16 +252,8 @@ int main( void )
 
 		// falcon movement
 		Utilities::movementHandler(window, deltaTime, rotSpeed, deltaX, deltaY, rotX, rotZ);
-
-		// falcon
 		falcon_transform = glm::mat4();
 		Utilities::updateFalcon(falcon_transform, deltaX, deltaY, rotX, rotY, rotZ);
-
-		// land
-		land_transform = glm::mat4();
-		land_transform = glm::translate(land_transform, glm::vec3(0.0f, -11.f, 4.0f));
-		land_transform = glm::rotate(land_transform, 0.1f, glm::vec3(1.0f, 0.f, 0.0f));
-		land_transform = glm::scale(land_transform, glm::vec3(40.0f, 10.0f, 40.0f));
 
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -289,21 +301,7 @@ int main( void )
 		simpleShader.setVec3("viewPos", camPos);
 		simpleShader.setMat4("view", view_matrix);
 		simpleShader.setMat4("projection", projection_matrix);
-
 		simpleShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
-
-		simpleShader.setVec3("light.ambient", ambientColor);
-		simpleShader.setVec3("light.diffuse", diffuseColor);
-		simpleShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-
-		// material properties
-		//		simpleShader.setVec3("material.ambient", 0.5f, 0.5f, 0.5f);
-		//		simpleShader.setVec3("material.diffuse", 1.0f, 1.0f, 1.0f);
-		//		simpleShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
-		simpleShader.setVec3("material.ambient", 0.3f, 0.3f, 0.3f);
-		simpleShader.setVec3("material.diffuse", 0.74f, 0.74f, 0.74f);
-		simpleShader.setVec3("material.specular", 0.6f, 0.6f, 0.6f);
-		simpleShader.setFloat("material.shininess", shininess);
 		simpleShader.setFloat("time", (float)glfwGetTime());
 
 		glActiveTexture(GL_TEXTURE0);
@@ -320,16 +318,6 @@ int main( void )
 		landShader.setMat4("projection", projection_matrix);
 		landShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
-		// light properties
-		landShader.setVec3("light.ambient", ambientColor);
-		landShader.setVec3("light.diffuse", diffuseColor);
-		landShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-
-		// material properties
-		landShader.setVec3("material.ambient", 0.45f, 0.45f, 0.45f);
-		landShader.setVec3("material.diffuse", 0.84f, 0.84f, 0.84f);
-		landShader.setVec3("material.specular", 0.2f, 0.2f, 0.2f);
-		landShader.setFloat("material.shininess", shininess);
 		landShader.setFloat("time", (float)glfwGetTime());
 
 		glActiveTexture(GL_TEXTURE0);
@@ -351,7 +339,6 @@ int main( void )
 				}
 			}
 		}
-		cout << Laser::max - Laser::count << endl;
 
 		// shoot
 		int state = glfwGetKey(window, GLFW_KEY_SPACE);
@@ -380,9 +367,6 @@ int main( void )
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
-			bloom = !bloom;
-
 		// 2 - blur bright fragments with two-pass Gaussian Blur
 		bool horizontal = true, first_iteration = true;
 		blurShader.use();
@@ -409,10 +393,7 @@ int main( void )
 		glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal]);
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, vignetteTexture);
-		bloomShader.setFloat("exposure", 1.0f);
-		bloomShader.setBool("bloom", bloom);
-		bloomShader.setFloat("width", width);
-		bloomShader.setFloat("height", height);
+
 		bloomShader.setFloat("vigAlpha", static_cast<float>(vignette)/static_cast<float>(VIGNETTE_DURATION));
 
 		if(vignette > 0)

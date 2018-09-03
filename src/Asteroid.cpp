@@ -7,7 +7,7 @@ Asteroid::Asteroid(const glm::vec3 &lightPos, const glm::vec3 &camPos, const glm
 		const glm::vec3 &diffuseColor, unsigned int depthMap): alpha(0.0f), depthMap(depthMap)
 {
 	shader = Shader("src/shaders/matAsteroid.vs","src/shaders/matAsteroid.fs");
-	shadow = Shader("src/shaders/shadowAst.vs","src/shaders/shadowMap.fs");
+	//shadow = Shader("src/shaders/shadowAst.vs","src/shaders/shadowMap.fs");
 	explosion = Shader("src/shaders/matSky.vs","src/shaders/explosion.fs");
 	shader.use();
 	shader.setVec3("light.position", lightPos);
@@ -143,20 +143,20 @@ void Asteroid::Draw(Model &model)
 	shader.use();
 	shader.setFloat("alpha", alpha);
 	shader.setMat4("model", transform);
-	shader.setMat3("normalMat", glm::inverseTranspose(glm::mat3(transform)));
+	shader.setMat3("normalMat", glm::inverseTranspose(glm::mat3(transform))); // @suppress("Invalid arguments")
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, depthMap);
 	model.Draw(shader);
 }
 
-void Asteroid::DrawShadow(Model &model)
-{
-	if(hitted || position.z < -20.f) return;
-	shadow.use();
-	shadow.setMat4("model", transform);
-	shader.setMat3("normalMat", glm::inverseTranspose(glm::mat3(transform)));
-	model.Draw(shadow);
-}
+//void Asteroid::DrawShadow(Model &model)
+//{
+//	if(hitted || position.z < -20.f) return;
+//	shadow.use();
+//	shadow.setMat4("model", transform);
+//	shader.setMat3("normalMat", glm::inverseTranspose(glm::mat3(transform)));
+//	model.Draw(shadow);
+//}
 
 bool Asteroid::checkCollisionFalcon(const glm::vec3 &pos)
 {
@@ -168,7 +168,8 @@ bool Asteroid::checkCollisionLaser(const glm::vec3 &pos)
 {
 	if(hitted) return false;
 
-	if (hitted = (glm::distance(position, pos) < (1.f + boundSphere)))
+	hitted = (glm::distance(position, pos) < (1.f + boundSphere));
+	if (hitted)
 		explode = true;
 
 	return hitted;
@@ -187,8 +188,8 @@ void Asteroid::DrawExplosion(Model &model, unsigned int texture, int &i)
 	explosion.use();
 	transform = glm::mat4();
 	transform = glm::translate(transform, position);
-	transform = glm::rotate(transform, rotZ, glm::vec3(0.0f, 0.0f, 1.0f));
-	transform = glm::scale(transform, glm::vec3(scaleK*5.f));
+	transform = glm::rotate(transform, rotZ*360, glm::vec3(0.0f, 0.0f, 1.0f));
+	transform = glm::scale(transform, glm::vec3(scaleK*3.f));
 	explosion.setMat4("model", transform);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);

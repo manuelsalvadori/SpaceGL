@@ -20,7 +20,7 @@ public:
 	virtual ~Asteroid();
 
 	Shader shader;
-	Shader shadow;
+	//Shader shadow;
 	Shader explosion;
 	glm::vec3 position;
 	glm::vec3 scale;

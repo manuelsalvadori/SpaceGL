@@ -22,31 +22,25 @@ in vec3 worldNormal;
 in vec3 viewDir;
 in vec2 texCoord;
 
-//thanks, github
-float rand(float n){
+float rand(float n)
+{
 	return fract(sin(n) * 43758.5453123);
 }
 
-float noise(float p){
+float noise(float p)
+{
 	float fl = floor(p);
 	float fc = fract(p);
 	return mix(rand(fl), rand(fl + 1.0), fc);
 }
 
-void main(){
-
-	//Texture
-//	vec4 texColor = vec4(1.0);
-//	texColor = texture2D(texture_diffuse1, texCoord);
+void main()
+{
 
 	//Scan effect
 	float bars = 0.0;
 	float val = g_Time * m_BarSpeed + vertexWorldPos.y * m_BarDistance;
 	bars = step(val - floor(val), 0.5) * 0.65;
-
-	//Just plain old alpha
-	float alpha = 1.0;
-	alpha = m_Alpha;
 
 	//Flickering
 	float flicker = 1.0;
@@ -63,10 +57,8 @@ void main(){
 	float tempGlow = vertexWorldPos.y * m_GlowDistance - g_Time * m_GlowSpeed;
 	glow = tempGlow - floor(tempGlow);
 
-
-	vec4 color = /*texColor **/ m_MainColor + rimColor + (glow * 0.35 * m_MainColor);
-	color.a = /*texColor.a **/ alpha * (bars + rim + glow) * flicker;
+	vec4 color = m_MainColor + rimColor + (glow * 0.35 * m_MainColor);
+	color.a = m_Alpha * (bars + rim + glow) * flicker;
 	FragColor = color;
 	BrightColor = vec4(color.xyz*0.3, 1.0);
-	//BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 }

@@ -7,6 +7,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 
+#define FALCON_SPEED 8.5f
+#define WIDTH static_cast<int>(1152 * 0.8f)
+#define HEIGHT  static_cast<int>(648 * 0.8f)
+
 
 void Utilities::GLWF_init()
 {
@@ -36,7 +40,8 @@ void Utilities::GLEW_init()
 
 GLFWwindow* Utilities::createWindow()
 {
-	GLFWwindow* window = glfwCreateWindow(1152, 648, "OpenGL 3.3", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "OpenGL 3.3", NULL, NULL);
+	//GLFWwindow* window = glfwCreateWindow(1280, 755, "OpenGL 3.3", NULL, NULL);
 	if(window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -52,7 +57,7 @@ void Utilities::movementHandler(GLFWwindow *window, float &deltaTime, float &rot
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
 		if(deltaY < 3.7f)
-			deltaY += 7.5f * deltaTime;
+			deltaY += FALCON_SPEED * deltaTime;
 		if(rotX < 0.3f)
 			rotX += rotSpeed * deltaTime;
 	}
@@ -63,7 +68,7 @@ void Utilities::movementHandler(GLFWwindow *window, float &deltaTime, float &rot
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
 		if(deltaY > -5.5f)
-			deltaY -= 7.5f * deltaTime;
+			deltaY -= FALCON_SPEED * deltaTime;
 		if(rotX > -0.3f)
 			rotX -= rotSpeed * deltaTime;
 	}
@@ -74,7 +79,7 @@ void Utilities::movementHandler(GLFWwindow *window, float &deltaTime, float &rot
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
 		if(deltaX < 7.5f)
-			deltaX += 7.5f * deltaTime;
+			deltaX += FALCON_SPEED * deltaTime;
 		if(rotZ < 0.3f)
 			rotZ += rotSpeed * deltaTime;
 	}
@@ -85,7 +90,7 @@ void Utilities::movementHandler(GLFWwindow *window, float &deltaTime, float &rot
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
 		if(deltaX > -7.5f)
-			deltaX -= 7.5f * deltaTime;
+			deltaX -= FALCON_SPEED * deltaTime;
 		if(rotZ > -0.3f)
 			rotZ -= rotSpeed * deltaTime;
 	}
@@ -111,11 +116,10 @@ void Utilities::renderFalcon(Shader shader, Model &falcon, glm::mat4 &falcon_tra
 	falcon.Draw(shader);
 }
 
-void Utilities::renderHologram(Shader &holoShader, Model &model)
+void Utilities::setHoloShader(Shader &holoShader)
 {
 	holoShader.use();
-	holoShader.setFloat("g_Time", (float)glfwGetTime());
-	holoShader.setFloat("m_GlitchSpeed", 1.0f);
+	holoShader.setFloat("m_GlitchSpeed", 8.0f);
 	holoShader.setFloat("m_GlitchIntensity", 1.0f);
 	holoShader.setFloat("m_BarSpeed", 0.5f);
 	holoShader.setFloat("m_BarDistance", 10.f);
@@ -126,6 +130,13 @@ void Utilities::renderHologram(Shader &holoShader, Model &model)
 	holoShader.setFloat("m_GlowDistance", 0.2f);
 	holoShader.setVec4("m_RimColor", glm::vec4(0.5f,0.8f,1.f,1.f));
 	holoShader.setVec4("m_MainColor", glm::vec4(0.3f,0.5f,1.f,1.f));
+
+}
+
+void Utilities::renderHologram(Shader &holoShader, Model &model)
+{
+	holoShader.use();
+	holoShader.setFloat("g_Time", (float)glfwGetTime());
 
 	glm::mat4 t = glm::mat4();
 	t = glm::translate(t, glm::vec3(-8.5f,-3.9f,0.f));
@@ -296,13 +307,8 @@ vector<unsigned int> Utilities::loadExplosionTextures()
 	return explosionTextures;
 }
 
-unsigned int Utilities::loadTexture(string const &path)
+unsigned int Utilities::loadTexture(string const &filename)
 {
-//	string directory = path.substr(0, path.find_last_of('/'));
-//	string filename = string(path);
-//	filename = directory + '/' + filename;
-	string filename = path;
-
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
 
@@ -331,10 +337,9 @@ unsigned int Utilities::loadTexture(string const &path)
 	}
 	else
 	{
-		std::cout << "Texture failed to load at path: " << path << std::endl;
+		std::cout << "Texture failed to load at path: " << filename << std::endl;
 		stbi_image_free(data);
 	}
 
 	return textureID;
-
 }

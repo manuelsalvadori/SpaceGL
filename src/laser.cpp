@@ -6,7 +6,10 @@ int Laser::count = max;
 
 Laser::Laser() {}
 
-Laser::~Laser() {}
+Laser::~Laser()
+{
+	glDeleteProgram(shader.getID());
+}
 
 Laser::Laser(const glm::mat4 &view_matrix, const glm::mat4 &projection_matrix, Shader & shader): shader(shader)
 {
