@@ -8,8 +8,8 @@
 #include <glm/gtc/matrix_inverse.hpp>
 
 #define FALCON_SPEED 8.5f
-#define WIDTH static_cast<int>(1152 * 0.8f)
-#define HEIGHT  static_cast<int>(648 * 0.8f)
+#define WIDTH static_cast<int>(1152 * 1.f)
+#define HEIGHT  static_cast<int>(648 * 1.f)
 
 
 void Utilities::GLWF_init()
@@ -22,8 +22,8 @@ void Utilities::GLWF_init()
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); //We don't want the old OpenGL
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 }
 
 void Utilities::GLEW_init()

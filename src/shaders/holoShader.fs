@@ -29,9 +29,7 @@ float rand(float n)
 
 float noise(float p)
 {
-	float fl = floor(p);
-	float fc = fract(p);
-	return mix(rand(fl), rand(fl + 1.0), fc);
+	return mix(rand(floor(p)), rand(floor(p) + 1.0), fract(p));
 }
 
 void main()
@@ -40,7 +38,7 @@ void main()
 	//Scan effect
 	float bars = 0.0;
 	float val = g_Time * m_BarSpeed + vertexWorldPos.y * m_BarDistance;
-	bars = step(val - floor(val), 0.5) * 0.65;
+	bars = smoothstep(val - floor(val),0.2, 0.5) * 0.65;
 
 	//Flickering
 	float flicker = 1.0;
