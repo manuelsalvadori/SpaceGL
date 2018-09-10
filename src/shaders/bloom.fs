@@ -42,11 +42,27 @@ vec3 Fxaa(sampler2D sampler0, vec2 resolution)
 	vec3 rgbA = 0.5 * (texture(sampler0,   gl_FragCoord.xy  * inverse_resolution + dir * (1.0/3.0 - 0.5)).xyz + texture(sampler0,   gl_FragCoord.xy  * inverse_resolution + dir * (2.0/3.0 - 0.5)).xyz);
 	vec3 rgbB = rgbA * 0.5 + 0.25 * (texture(sampler0,  gl_FragCoord.xy  * inverse_resolution + dir *  - 0.5).xyz + texture(sampler0,  gl_FragCoord.xy  * inverse_resolution + dir * 0.5).xyz);
 	float lumaB = dot(rgbB, luma);
-	
+
 	if((lumaB < lumaMin) || (lumaB > lumaMax))
 		return rgbA;
 	else
 		return rgbB;
+}
+
+vec4 adjust(vec4 pixelColor, float Brightness, float Contrast)
+{
+	pixelColor.rgb /= pixelColor.a;
+
+	// Apply contrast.
+	pixelColor.rgb = ((pixelColor.rgb - 0.5f) * max(Contrast, 0)) + 0.5f;
+
+	// Apply brightness.
+	pixelColor.rgb += Brightness;
+
+	// Return final pixel color.
+	pixelColor.rgb *= pixelColor.a;
+
+	return pixelColor;
 }
 
 void main()
@@ -56,13 +72,15 @@ void main()
 	vec3 hdrColor = Fxaa(scene, vec2(width, height));
 	vec3 bloomColor = texture(bloomBlur, TexCoords).rgb;
 	vec4 vignetteColor = texture(vignette, TexCoords);
-	
+
 	hdrColor += bloomColor; // additive blending
-	
+
 	// tone mapping
 	//hdrColor = vec3(1.0) - exp(-hdrColor * exposure);
 	// also gamma correct while we're at it       
 	//hdrColor = pow(hdrColor, vec3(1.0 / gamma));
 
-	FragColor = vec4(hdrColor, 1.0) + vignetteColor*vigAlpha;
+	vec4 finalColor = vec4(hdrColor, 1.0) + vignetteColor*vigAlpha;
+	FragColor = finalColor;
+	//FragColor = adjust(finalColor, -0.03, 0.9);
 }

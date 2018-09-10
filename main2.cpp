@@ -14,6 +14,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include "src/Laser.h"
+#include "src/Target.h"
 
 #define AST_N 4
 #define VIGNETTE_DURATION 16
@@ -70,6 +71,8 @@ int main( void )
 	Model vader("src/falcon/vader.obj");
 	Model laserModel("src/falcon/laser.obj");
 	glm::mat4 laser_transform;
+
+	Target target(view_matrix, projection_matrix);
 
 	vector<unique_ptr<Model>> numbers = Utilities::loadNumbers();
 	unsigned int vignetteTexture = Utilities::loadTexture("src/skybox/vignette.png");
@@ -360,6 +363,8 @@ int main( void )
 		// render explosions
 		for(int i = 0; i < AST_N; i++)
 			asteroids[i].DrawExplosion(quad, explosionTextures[counters[i]], counters[i]);
+
+		target.renderTarget(quad, deltaX, deltaY);
 
 		// hologram render
 		Utilities::renderHologram(holoShader, vader);

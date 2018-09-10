@@ -58,4 +58,3 @@ void Laser::reset()
 	shooted = false;
 	count ++;
 }
-

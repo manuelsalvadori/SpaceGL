@@ -32,6 +32,7 @@ public:
 	static vector<int> loadCounters(int ast);
 	static vector<unsigned int> loadExplosionTextures();
 	static unsigned int loadTexture(string const &path);
+
 private:
 	static int currentLaser;
 };

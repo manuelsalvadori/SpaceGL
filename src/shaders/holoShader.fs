@@ -53,7 +53,7 @@ void main()
 	//Glow
 	float glow = 0.0;
 	float tempGlow = vertexWorldPos.y * m_GlowDistance - g_Time * m_GlowSpeed;
-	glow = tempGlow - floor(tempGlow);
+	glow = fract(tempGlow);
 
 	vec4 color = m_MainColor + rimColor + (glow * 0.35 * m_MainColor);
 	color.a = m_Alpha * (bars + rim + glow) * flicker;
