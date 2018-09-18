@@ -19,6 +19,7 @@ public:
 	static void renderAsteroids(Shader shader, Model &asteroid, glm::mat4 &ast_transform);
 	static void renderLand(Shader shader, Model &land, glm::mat4 &land_transform);
 	static void renderHologram(Shader &holoShader, Model &model);
+	static void renderHologramBottom(Shader &holoShader, Model &model);
 	static void setHoloShader(Shader &holoShader);
 	static void asteroidsTransform(glm::mat4 &ast_transform, glm::vec3 traslate, float rotx, float roty, float rotz, glm::vec3 scale = glm::vec3(1.f));
 	static void moveLight(GLFWwindow *window, glm::vec3 &lightPos);

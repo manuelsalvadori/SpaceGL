@@ -133,6 +133,22 @@ void Utilities::setHoloShader(Shader &holoShader)
 
 }
 
+void Utilities::renderHologramBottom(Shader &holoShader, Model &model)
+{
+	holoShader.use();
+	holoShader.setFloat("g_Time", (float)glfwGetTime());
+
+	glm::mat4 t = glm::mat4();
+	t = glm::translate(t, glm::vec3(-8.5f,-6.9f,0.f));
+
+	t = glm::scale(t, glm::vec3(1.5f, 1.5f, 1.5f));
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glm::mat4 normalMat = glm::inverseTranspose(glm::mat3(t));
+	holoShader.setMat4("model", t);
+	holoShader.setMat3("normalMat", normalMat);
+	model.Draw(holoShader);
+}
+
 void Utilities::renderHologram(Shader &holoShader, Model &model)
 {
 	holoShader.use();

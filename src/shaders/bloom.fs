@@ -80,7 +80,7 @@ void main()
 	// also gamma correct while we're at it       
 	//hdrColor = pow(hdrColor, vec3(1.0 / gamma));
 
-	vec4 finalColor = vec4(hdrColor, 1.0) + vignetteColor*vigAlpha;
+	vec4 finalColor = vec4(hdrColor, 1.0) + vignetteColor * vigAlpha;
 	FragColor = finalColor;
-	//FragColor = adjust(finalColor, -0.03, 0.9);
+	FragColor = adjust(finalColor, +0.02, 0.9);
 }

@@ -39,10 +39,13 @@ void main()
 	float bars = 0.0;
 	float val = g_Time * m_BarSpeed + vertexWorldPos.y * m_BarDistance;
 	bars = smoothstep(val - floor(val),0.2, 0.5) * 0.65;
+	
+	val = g_Time * m_BarSpeed + vertexWorldPos.x * m_BarDistance* 0.5;
+	bars += smoothstep(val - floor(val), 0.2, 0.5) * 0.1;
 
 	//Flickering
 	float flicker = 1.0;
-	flicker = clamp(noise(g_Time * m_FlickerSpeed), 0.65, 1.0);
+	flicker = clamp(noise(g_Time * m_FlickerSpeed * 100), 0.165, 1.0);
 
 	//Rim lighting
 	float rim = 1.0;
@@ -53,7 +56,7 @@ void main()
 	//Glow
 	float glow = 0.0;
 	float tempGlow = vertexWorldPos.y * m_GlowDistance - g_Time * m_GlowSpeed;
-	glow = fract(tempGlow);
+	glow = fract(tempGlow) * 0.6;
 
 	vec4 color = m_MainColor + rimColor + (glow * 0.35 * m_MainColor);
 	color.a = m_Alpha * (bars + rim + glow) * flicker;

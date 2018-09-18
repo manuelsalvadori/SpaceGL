@@ -367,6 +367,7 @@ int main( void )
 		target.renderTarget(quad, deltaX, deltaY);
 
 		// hologram render
+		//Utilities::renderHologramBottom(holoShader, quad);
 		Utilities::renderHologram(holoShader, vader);
 		Utilities::renderScore(holoShader, *numbers[(score/10) % 10], *numbers[score % 10]);
 

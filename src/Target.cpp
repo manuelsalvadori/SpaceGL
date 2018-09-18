@@ -10,7 +10,10 @@ Target::Target(const glm::mat4 &view_matrix, const glm::mat4 &projection_matrix)
 	shader.setMat4("projection", projection_matrix);
 }
 
-Target::~Target() {}
+Target::~Target()
+{
+	glDeleteProgram(shader.getID());
+}
 
 void Target::renderTarget(Model &model, const float &deltaX, float &deltaY)
 {
