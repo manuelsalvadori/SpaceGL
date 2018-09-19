@@ -82,5 +82,5 @@ void main()
 
 	vec4 finalColor = vec4(hdrColor, 1.0) + vignetteColor * vigAlpha;
 	FragColor = finalColor;
-	FragColor = adjust(finalColor, +0.02, 0.9);
+	FragColor = adjust(finalColor, +0.015, 0.8);
 }

@@ -51,7 +51,7 @@ int main( void )
 	Shader bloomShader = Shader("src/shaders/bloom.vs","src/shaders/bloom.fs");
 	Shader holoShader = Shader("src/shaders/holoShader.vs","src/shaders/holoShader.fs");
 	Shader laserShader = Shader("src/shaders/matSky.vs","src/shaders/laser.fs");
-	//Shader debugDepthQuad = Shader("src/shaders/debug.vs","src/shaders/debug.fs");
+	Shader debugDepthQuad = Shader("src/shaders/debug.vs","src/shaders/debug.fs");
 
 	glm::vec3 lightPos = glm::vec3(46,77,86);
 	glm::vec3 camPos = glm::vec3(0,1,15);
@@ -191,6 +191,12 @@ int main( void )
 	for(int i = 0; i < AST_N; i++)
 		asteroids[i] = Asteroid(lightPos, camPos, view_matrix, projection_matrix, lightSpaceMatrix, ambientColor, diffuseColor, depthMap);
 
+	Asteroid debugAst(lightPos, camPos, view_matrix, projection_matrix, lightSpaceMatrix, ambientColor, diffuseColor, depthMap);
+	debugAst.transform = glm::translate(glm::mat4(), glm::vec3(0,0,-10));
+	debugAst.transform = glm::rotate(debugAst.transform, 4.0f, glm::vec3(0,1,0));
+	debugAst.transform = glm::scale(debugAst.transform, glm::vec3(1.5,1.5,1.5));
+	debugAst.alpha = 1.0f;
+
 	// lasers generation
 	vector<unique_ptr<Laser>> lasers = Utilities::loadLasers(view_matrix, projection_matrix, laserShader);
 
@@ -273,6 +279,7 @@ int main( void )
 		Utilities::renderFalcon(shadowShader, falcon, falcon_transform);
 		//		for(int i = 0; i < 5; i++)
 		//			asteroids[i].DrawShadow(asteroid);
+		//Utilities::renderLand(shadowShader, land, land_transform);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -370,6 +377,13 @@ int main( void )
 		//Utilities::renderHologramBottom(holoShader, quad);
 		Utilities::renderHologram(holoShader, vader);
 		Utilities::renderScore(holoShader, *numbers[(score/10) % 10], *numbers[score % 10]);
+
+		//debug asteroid
+//		glClear(GL_DEPTH_BUFFER_BIT);
+//		debugAst.transform = glm::translate(glm::mat4(), glm::vec3(0,0,-10));
+//		debugAst.transform = glm::rotate(debugAst.transform, (float)glfwGetTime()*1.2f, glm::vec3(0,1,0));
+//		debugAst.transform = glm::scale(debugAst.transform, glm::vec3(1.5,1.5,1.6));
+//		debugAst.Draw(asteroid);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

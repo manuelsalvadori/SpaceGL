@@ -2,6 +2,7 @@
 #include "Asteroid.h"
 
 Asteroid::Asteroid(): boundSphere(), rotX(), rotY(), rotZ(), alpha(), scaleK(), depthMap(){}
+
 Asteroid::Asteroid(const glm::vec3 &lightPos, const glm::vec3 &camPos, const glm::mat4 &view_matrix,
 		const glm::mat4 &projection_matrix, const glm::mat4 &lightSpaceMatrix, const glm::vec3 &ambientColor,
 		const glm::vec3 &diffuseColor, unsigned int depthMap): alpha(0.0f), depthMap(depthMap)
