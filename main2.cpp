@@ -51,7 +51,7 @@ int main( void )
 	Shader bloomShader = Shader("src/shaders/bloom.vs","src/shaders/bloom.fs");
 	Shader holoShader = Shader("src/shaders/holoShader.vs","src/shaders/holoShader.fs");
 	Shader laserShader = Shader("src/shaders/matSky.vs","src/shaders/laser.fs");
-	Shader debugDepthQuad = Shader("src/shaders/debug.vs","src/shaders/debug.fs");
+	//Shader debugDepthQuad = Shader("src/shaders/debug.vs","src/shaders/debug.fs");
 
 	glm::vec3 lightPos = glm::vec3(46,77,86);
 	glm::vec3 camPos = glm::vec3(0,1,15);

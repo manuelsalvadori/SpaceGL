@@ -20,21 +20,17 @@ uniform float m_GlitchIntensity;
 
 void main()
 {
-	mat4 g_WorldViewProjectionMatrix = projection * view * model;
-	mat4 g_WorldMatrix = model;
-	mat4 g_WorldViewMatrix = view * model;
-	mat4 g_ViewProjectionMatrix = projection * view;
-	
-	vertexWorldPos = (g_WorldMatrix * vec4(aPos, 1.0)).xyz;
+	mat4 viewModel = view * model;
+	vertexWorldPos = (model * vec4(aPos, 1.0)).xyz;
 	vertexModelPos = aPos;
 	texCoord = aTexCoords;
 	worldNormal = normalize(normalMat * aNormal);
-	viewDir = normalize(-(g_WorldViewMatrix * vec4(aPos, 1.0)).xyz);
+	viewDir = normalize(-(viewModel * vec4(aPos, 1.0)).xyz);
 
-	vec3 outPosition = (g_WorldMatrix * vec4(aPos, 1.0)).xyz;
+	vec3 outPosition = (model * vec4(aPos, 1.0)).xyz;
 	
 	//Glitch
 	outPosition.x += sign(sin(g_Time)) * m_GlitchIntensity * step(0.5, sin(g_Time * 2.0 + aPos.y)) * step(0.99, sin(g_Time * m_GlitchSpeed*1.1 * 0.5));
 
-	gl_Position = g_ViewProjectionMatrix * vec4(outPosition, 1.0);
+	gl_Position = (projection * view) * vec4(outPosition, 1.0);
 }

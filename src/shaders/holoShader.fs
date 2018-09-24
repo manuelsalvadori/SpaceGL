@@ -38,31 +38,34 @@ void main()
 {
 	//Effetto righe
 	float bars = 0.0;
-	float val = g_Time * m_BarSpeed + vertexWorldPos.y * m_BarDistance;
-	bars = smoothstep(val - floor(val),0.2, 0.5) * 0.65;
+	float value = vertexWorldPos.y * m_BarDistance;
+	bars = smoothstep(fract(value), 0.2, 0.5) * 0.65;
 	
-	val = g_Time * m_BarSpeed + vertexWorldPos.x * m_BarDistance* 0.5;
-	bars += smoothstep(val - floor(val), 0.2, 0.5) * 0.1;
+	value = vertexWorldPos.x * m_BarDistance* 0.5;
+	bars += smoothstep(fract(value), 0.2, 0.5) * 0.1;
 
 	//Flickering
 	float flicker = 1.0;
-	flicker = clamp(pnoise(vertexWorldPos * noise(g_Time * m_FlickerSpeed * 100), vertexWorldPos), 0.365, 1.0);
+	flicker = clamp(pnoise(vertexWorldPos * noise(g_Time * m_FlickerSpeed * 100), vertexWorldPos/100), 0.2365, 1.0); //.365
 
 	//Illuminazione
-	float rim = 1.0;
-	vec4 rimColor = vec4(0.0);
-	rim = 1.0 - clamp(dot(viewDir, worldNormal), 0.0, 1.0);
-	rimColor = m_RimColor * pow(rim, m_RimPower);
+	float lambert = 1.0;
+	vec4 lambertColor = vec4(0.0);
+	lambert = 1.0 - clamp(dot(viewDir, worldNormal), 0.0, 1.0);
+	lambertColor = m_RimColor * pow(lambert, m_RimPower);
 
 	//Effetto scansione
 	float scan = 0.0;
-	float tempGlow = vertexWorldPos.y * m_GlowDistance - g_Time * m_GlowSpeed;
-	scan = fract(tempGlow) * 0.95;
+	float tempScan = vertexWorldPos.y * m_GlowDistance + g_Time * m_GlowSpeed;
+	scan = -fract(tempScan) * 0.95;
+	
+	tempScan = (vertexWorldPos.y + 0.5) * m_GlowDistance - g_Time * m_GlowSpeed;
+	scan += fract(tempScan) * 0.4;
 
-	vec4 color = m_MainColor + rimColor + (scan * 0.35 * m_MainColor);
-	color.a = m_Alpha * (bars + rim + scan) * flicker;
+	vec4 color = m_MainColor + lambertColor + (scan * 0.35 * m_MainColor);
+	color.a = m_Alpha * (bars + lambert + scan) * flicker * 4;
 	FragColor = color;
-	BrightColor = vec4(color.xyz*0.3, 1.0);
+	BrightColor = vec4(color.xyz*0.35, 1.0);
 }
 
 vec3 mod289(vec3 x)
