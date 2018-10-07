@@ -28,8 +28,8 @@ in vec3 TangentViewPos;
 in vec3 TangentFragPos;
 in float noise;
 
-//uniform float sphere;	// visual debug bounding sphere
-//in vec3 debugOrigin;
+uniform float sphere;	// visual debug bounding sphere
+in vec3 debugOrigin;
 uniform float alpha;
 uniform float r;
 uniform vec3 viewPos;

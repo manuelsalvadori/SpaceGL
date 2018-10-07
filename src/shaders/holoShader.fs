@@ -22,16 +22,8 @@ in vec3 worldNormal;
 in vec3 viewDir;
 in vec2 texCoord;
 
-float rand(float n)
-{
-	return fract(sin(n) * 43758.5453123);
-}
-
-float noise(float p)
-{
-	return mix(rand(floor(p)), rand(floor(p) + 1.0), fract(p));
-}
-
+float rand(float n) {return fract(sin(n) * 43758.5453123);}
+float noise(float p) {return mix(rand(floor(p)), rand(floor(p) + 1.0), fract(p));}
 float pnoise(vec3 P, vec3 rep);
 
 void main()
@@ -46,7 +38,8 @@ void main()
 
 	//Flickering
 	float flicker = 1.0;
-	flicker = clamp(pnoise(vertexWorldPos * noise(g_Time * m_FlickerSpeed * 100), vertexWorldPos/100), 0.2365, 1.0); //.365
+	float w = 1 - step(0.2, sin(g_Time * 2.0)) * step(0.01, sin(g_Time*0.5));
+	flicker = clamp(pnoise(vertexWorldPos * noise(g_Time * m_FlickerSpeed * 100), vertexWorldPos/100), w*0.2365, 1.0); //.365
 
 	//Illuminazione
 	float lambert = 1.0;

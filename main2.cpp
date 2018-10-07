@@ -267,7 +267,7 @@ int main( void )
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// 1 - render depth of scene to texture (from light's perspective)
+		// 1 - render depth of scene to texture (from light's perspective)------------------------------------------------------
 		shadowShader.use();
 		shadowShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
@@ -387,7 +387,7 @@ int main( void )
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		// 2 - blur bright fragments with two-pass Gaussian Blur
+		// 2 - blur bright fragments with two-pass Gaussian Blur----------------------------------------------------------------
 		bool horizontal = true, first_iteration = true;
 		blurShader.use();
 		for (unsigned int i = 0; i < 6; i++)

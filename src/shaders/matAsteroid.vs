@@ -15,7 +15,7 @@ out vec3 TangentViewPos;
 out vec3 TangentFragPos;
 
 // visual debug bounding sphere
-// out vec3 debugOrigin;
+ out vec3 debugOrigin;
 
 out float noise;
 
@@ -60,7 +60,7 @@ void main()
 	//vec3 newPos = aPos + (aNormal * max(displacement,0.f));
 	vec3 newPos = aPos + (aNormal * abs(displacement));
 	
-	//debugOrigin = vec3(model * vec4(0.,0.,0.,1.)); // visual debug bounding sphere
+	debugOrigin = vec3(model * vec4(0.,0.,0.,1.)); // visual debug bounding sphere
 	FragPos = vec3(model * vec4(newPos, 1.0));
 	
 	// normal mapping
@@ -177,10 +177,10 @@ float turbulence(vec3 p)
 	float w = 100.0;
 	float t = -.5;
 
-	for (float f = 1.0 ; f <= 10.0 ; f++ )
+	for (float f = 1.0 ; f <= 10.0 ; f++)
 	{
-		float power = pow( 2.0, f );
-		t += abs( pnoise( vec3( power * p ), vec3( 10.0, 10.0, 10.0 ) ) / power );
+		float power = pow(2.0, f);
+		t += abs(pnoise(vec3(power * p ), vec3(10.0, 10.0, 10.0 ) ) / power);
 	}
 
 	return t;

@@ -29,7 +29,7 @@ void main()
 
 	vec3 outPosition = (model * vec4(aPos, 1.0)).xyz;
 	
-	//Glitch
+	//Glitch vertex displacement
 	outPosition.x += sign(sin(g_Time)) * m_GlitchIntensity * step(0.5, sin(g_Time * 2.0 + aPos.y)) * step(0.99, sin(g_Time * m_GlitchSpeed*1.1 * 0.5));
 
 	gl_Position = (projection * view) * vec4(outPosition, 1.0);
