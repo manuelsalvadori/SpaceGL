@@ -246,9 +246,25 @@ int main( void )
 	//	debugDepthQuad.use();
 	//	debugDepthQuad.setInt("depthMap", 0);
 
+//	double lastTime = glfwGetTime();
+//	int nbFrames = 0;
+//	double ftime = 0;
+
 	// game loop -----------------------------------------------------------------------------------------------------------
 	while(glfwWindowShouldClose(window) == 0)
 	{
+		// Measure speed
+//		double currentTime = glfwGetTime();
+//		nbFrames++;
+//		if ( currentTime - lastTime >= 1.0 )
+//		{ // If last prinf() was more than 1 sec ago
+//			// printf and reset timer
+//			ftime = 1000.0/double(nbFrames);
+//			cout << ftime << "ms/frame "  << 1.0/ftime*1000 << "fps" << std::endl;
+//			nbFrames = 0;
+//			lastTime += 1.0;
+//		}
+
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
@@ -379,18 +395,18 @@ int main( void )
 		Utilities::renderScore(holoShader, *numbers[(score/10) % 10], *numbers[score % 10]);
 
 		//debug asteroid
-//		glClear(GL_DEPTH_BUFFER_BIT);
-//		debugAst.transform = glm::translate(glm::mat4(), glm::vec3(0,0,-10));
-//		debugAst.transform = glm::rotate(debugAst.transform, (float)glfwGetTime()*1.2f, glm::vec3(0,1,0));
-//		debugAst.transform = glm::scale(debugAst.transform, glm::vec3(1.5,1.5,1.6));
-//		debugAst.Draw(asteroid);
+		//		glClear(GL_DEPTH_BUFFER_BIT);
+		//		debugAst.transform = glm::translate(glm::mat4(), glm::vec3(0,0,-10));
+		//		debugAst.transform = glm::rotate(debugAst.transform, (float)glfwGetTime()*1.2f, glm::vec3(0,1,0));
+		//		debugAst.transform = glm::scale(debugAst.transform, glm::vec3(1.5,1.5,1.6));
+		//		debugAst.Draw(asteroid);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		// 2 - blur bright fragments with two-pass Gaussian Blur----------------------------------------------------------------
 		bool horizontal = true, first_iteration = true;
 		blurShader.use();
-		for (unsigned int i = 0; i < 6; i++)
+		for (unsigned int i = 0; i < 4; i++)
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);

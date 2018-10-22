@@ -84,7 +84,7 @@ void main()
 	// transform normal vector to range [-1,1]
 	normal = normalize(normal * 2.0 - 1.0);  // this normal is in tangent space
 
-	vec3 color = texture(texture_diffuse1, texCoords).rgb + FragPos.z/110.f;
+	vec3 color = texture(texture_diffuse1, texCoords).rgb * 1.1 + FragPos.z/110.f;
 
 	// ambient
 	vec3 ambient = 0.5 * color * light.ambient * material.ambient;

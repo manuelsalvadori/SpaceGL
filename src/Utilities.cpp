@@ -8,8 +8,9 @@
 #include <glm/gtc/matrix_inverse.hpp>
 
 #define FALCON_SPEED 8.5f
-#define WIDTH static_cast<int>(1152 * 1.f)
-#define HEIGHT  static_cast<int>(648 * 1.f)
+#define RES 0.9f
+#define WIDTH static_cast<int>(1152 * RES)
+#define HEIGHT  static_cast<int>(648 * RES)
 
 
 void Utilities::GLWF_init()
